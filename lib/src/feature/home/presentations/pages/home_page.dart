@@ -484,7 +484,7 @@ class _HomePageState extends State<HomePage> {
                 children: [
                   ElevatedButton(
                     onPressed: () => context.push(
-                      '/register/${Uri.decodeComponent(json.encode(user))}',
+                      '/register/details/${Uri.decodeComponent(json.encode(user))}',
                     ),
                     child: state is AuthLoading
                         ? const CircularProgressIndicator()

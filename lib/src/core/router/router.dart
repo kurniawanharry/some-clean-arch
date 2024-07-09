@@ -27,14 +27,20 @@ class AppRouter {
       ),
       GoRoute(
         name: 'register',
-        path: '/register/:data',
-        builder: (context, state) {
-          final jsonData = Uri.decodeComponent(state.pathParameters['data']!);
-          final data = json.decode(jsonData) as Map<String, dynamic>;
-          return RegisterPage(
-            data: UserModel.fromJson(data),
-          );
-        },
+        path: '/register',
+        builder: (context, state) => const RegisterPage(),
+        routes: [
+          GoRoute(
+            path: 'details/:data',
+            builder: (context, state) {
+              final jsonData = Uri.decodeComponent(state.pathParameters['data']!);
+              final data = json.decode(jsonData) as Map<String, dynamic>;
+              return RegisterPage(
+                data: UserModel.fromJson(data),
+              );
+            },
+          ),
+        ],
       ),
       GoRoute(
         name: 'home',
