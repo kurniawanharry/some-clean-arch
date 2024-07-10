@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
@@ -412,12 +411,11 @@ class _RegisterPageState extends State<RegisterPage> {
                               return;
                             }
                             setState(() {
-                              Placemark placemark = result['placemark']!!;
+                              String address = result['address']!!;
                               var lat = result['lat'];
                               var lng = result['lng'];
 
-                              addressController.text =
-                                  '${placemark.street},${placemark.subLocality}, ${placemark.locality}, ${placemark.subAdministrativeArea}, ${placemark.administrativeArea}';
+                              addressController.text = address;
                               latLng = LatLng(lat, lng);
                             });
                           },

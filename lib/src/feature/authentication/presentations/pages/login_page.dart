@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -207,19 +206,23 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 15),
                       Align(
                         alignment: Alignment.center,
-                        child: Text.rich(
-                          TextSpan(
-                            text: 'New to Some App? ',
-                            children: [
-                              TextSpan(
-                                text: 'Register here',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: AppColors.third,
-                                    ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () => context.pushNamed('register'),
-                              )
-                            ],
+                        child: TextButton(
+                          onPressed: () => context.pushNamed('register'),
+                          child: Text.rich(
+                            TextSpan(
+                              text: 'Belum mendaftar? ',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: AppColors.secondary,
+                                  ),
+                              children: [
+                                TextSpan(
+                                  text: 'Daftar Sekarang!',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: AppColors.third,
+                                      ),
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       ),

@@ -1,9 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:some_app/src/core/network/error/failure.dart';
 import 'package:some_app/src/core/util/usescases/usecases.dart';
+import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/user_id_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/user_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/users_usecase.dart';
@@ -16,6 +17,8 @@ class HomeCubit extends Cubit<HomeState> {
   final UsersUseCase usersUseCase;
   final UserIdUseCase userIdUseCase;
   final VerifyUseCase verifyUseCase;
+  final RefreshTokenUseCase refreshUseCase;
+  final AuthSharedPrefs authSharedPrefs;
 
   List<UserModel> allUsers = [];
   List<UserModel> filteredUsers = [];
@@ -25,6 +28,8 @@ class HomeCubit extends Cubit<HomeState> {
     this.userUseCase,
     this.usersUseCase,
     this.verifyUseCase,
+    this.refreshUseCase,
+    this.authSharedPrefs,
   ) : super(HomeInitial());
 
   Future fetchUser() async {
@@ -32,17 +37,7 @@ class HomeCubit extends Cubit<HomeState> {
       emit(HomeLoading());
       final result = await userUseCase.call(NoParams());
       result.fold((l) {
-        if (l is ServerFailure) {
-          if (l.statusCode == 401) {
-            emit(HomeFailed());
-          }
-        } else if (l is CancelTokenFailure) {
-          if (l.statusCode == 401) {
-            emit(HomeFailed());
-          }
-        } else {
-          emit(HomeFailure(l.errorMessage));
-        }
+        emit(HomeFailed());
       }, (r) async {
         emit(HomeUserSuccess(r));
       });
@@ -56,7 +51,7 @@ class HomeCubit extends Cubit<HomeState> {
       emit(HomeLoading());
       final result = await usersUseCase.call(NoParams());
       result.fold((l) {
-        emit(HomeFailure(l.errorMessage));
+        emit(HomeFailed());
       }, (r) async {
         allUsers = r;
         emit(HomeUsersSuccess(r));
@@ -123,5 +118,27 @@ class HomeCubit extends Cubit<HomeState> {
       filteredUsers = List.from(list);
     }
     emit(HomeUsersSuccess(filteredUsers));
+  }
+
+  Future refreshToken(bool isAdmin) async {
+    try {
+      emit(HomeLoading());
+      final result = await refreshUseCase.call(NoParams());
+      result.fold((l) {
+        emit(HomeFailure(l.errorMessage));
+      }, (r) async {
+        // Save the token to shared preferences
+        await authSharedPrefs.saveToken(r.accessToken!);
+        await authSharedPrefs.saveType(r.userType ?? 200);
+
+        if (isAdmin) {
+          fetchUsers();
+        } else {
+          fetchUser();
+        }
+      });
+    } catch (error) {
+      emit(HomeFailure(error.toString()));
+    }
   }
 }

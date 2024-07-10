@@ -9,6 +9,7 @@ import 'package:some_app/src/feature/authentication/data/models/token_model.dart
 abstract class AbstractAuthRepository {
   Future<Either<Failure, TokenModel>> signIn(SignInModel params);
   Future<Either<Failure, UserModel>> signUp(SignUpModel params);
+  Future<Either<Failure, TokenModel>> refreshToken();
   Future<Either<Failure, bool>> edit(EditModel params);
   Future<Either<Failure, dynamic>> logout();
 }

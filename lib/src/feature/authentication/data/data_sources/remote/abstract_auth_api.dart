@@ -12,5 +12,7 @@ abstract class AbstractAuthApi {
 
   Future<bool> edit(EditModel params);
 
+  Future<TokenModel> refreshToken();
+
   Future logout();
 }

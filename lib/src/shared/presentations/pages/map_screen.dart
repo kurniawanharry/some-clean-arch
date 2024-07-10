@@ -4,13 +4,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class MapScreen extends StatelessWidget {
   final double latitude;
   final double longitude;
-  final BitmapDescriptor bitMap;
 
   const MapScreen({
     super.key,
     required this.latitude,
     required this.longitude,
-    required this.bitMap,
   });
 
   @override
@@ -26,8 +24,6 @@ class MapScreen extends StatelessWidget {
           Marker(
             markerId: const MarkerId('location_marker'),
             position: LatLng(latitude, longitude),
-            icon: bitMap,
-            anchor: const Offset(0.5, 0.5),
           ),
         },
       ),

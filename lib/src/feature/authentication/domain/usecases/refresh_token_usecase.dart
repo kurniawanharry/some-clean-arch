@@ -1,17 +1,21 @@
-import 'package:some_app/src/feature/authentication/domain/repositories/abstract_token_repo.dart';
+import 'package:dartz/dartz.dart';
+import 'package:some_app/src/core/network/error/failure.dart';
+import 'package:some_app/src/core/util/usescases/usecases.dart';
+import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
+import 'package:some_app/src/feature/authentication/domain/repositories/abstract_auth_repo.dart';
 
-class RefreshTokenUseCase {
-  final AbstractTokenRepository _repository;
+class RefreshTokenUseCase extends UseCase<TokenModel, NoParams> {
+  final AbstractAuthRepository repository;
 
-  RefreshTokenUseCase(this._repository);
+  RefreshTokenUseCase(this.repository);
 
-  Future<String?> execute() async {
-    try {
-      return await _repository.refreshToken();
-    } catch (e) {
-      // Handle error, e.g., log, throw custom exception, etc.
-      print('Error refreshing token: $e');
-      return null;
-    }
+  @override
+  Future<Either<Failure, TokenModel>> call(params) async {
+    final result = await repository.refreshToken();
+    return result.fold((l) {
+      return Left(l);
+    }, (r) async {
+      return Right(r);
+    });
   }
 }

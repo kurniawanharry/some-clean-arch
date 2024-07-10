@@ -1,21 +1,15 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/core/styles/app_dimens.dart';
-import 'package:some_app/src/core/util/constants/constants.dart';
-import 'package:some_app/src/core/util/injections.dart';
-import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/presentations/cubit/auth_cubit.dart';
 import 'package:some_app/src/feature/authentication/presentations/pages/register_page.dart';
 import 'package:some_app/src/feature/home/presentations/cubit/home_cubit.dart';
-import 'package:some_app/src/feature/map/presentations/pages/google_map_page.dart';
 import 'package:some_app/src/shared/presentations/pages/map_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -71,7 +65,7 @@ class _HomePageState extends State<HomePage> {
             bloc: _cubit,
             listener: (context, state) {
               if (state is HomeFailed) {
-                getIt<AuthSharedPrefs>().removeToken().then((value) => context.go('/'));
+                context.read<HomeCubit>().refreshToken(isAdmin);
               }
             },
             child: BlocBuilder<HomeCubit, HomeState>(
@@ -79,7 +73,9 @@ class _HomePageState extends State<HomePage> {
               builder: (context, state) {
                 if (state is HomeLoading) {
                   return const Center(
-                    child: CircularProgressIndicator(),
+                    child: CircularProgressIndicator(
+                      color: AppColors.white,
+                    ),
                   );
                 } else {
                   if (state is HomeUserSuccess) {
@@ -88,8 +84,16 @@ class _HomePageState extends State<HomePage> {
                   } else if (state is HomeUsersSuccess) {
                     return _admin(context, state);
                   } else {
-                    return const Center(
-                      child: Text('No Data'),
+                    return Center(
+                      child: Column(
+                        children: [
+                          const Text('Data Tidak Ditemukan'),
+                          ElevatedButton(
+                            onPressed: () => context.read<HomeCubit>().refreshToken(isAdmin),
+                            child: const Text('Refresh'),
+                          )
+                        ],
+                      ),
                     );
                   }
                 }
@@ -331,12 +335,6 @@ class _HomePageState extends State<HomePage> {
                     ),
               ),
               onTap: () async {
-                var data = await rootBundle.load('${imagePath}logo.png');
-                var image = data.buffer.asUint8List();
-                BitmapDescriptor userPicture = await getMarkerIcon(
-                  image,
-                  const Size(150.0, 150.0),
-                );
                 return showModalBottomSheet(
                   // ignore: use_build_context_synchronously
                   context: context,
@@ -354,7 +352,6 @@ class _HomePageState extends State<HomePage> {
                               child: MapScreen(
                                 latitude: double.parse(user.latitude ?? '0.0'),
                                 longitude: double.parse(user.longitude ?? '0.0'),
-                                bitMap: userPicture,
                               ),
                             ),
                           ),
@@ -512,15 +509,15 @@ Future<bool> showExitDialog(BuildContext context) async {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Logout'),
-          content: const Text('Do you want to logout?'),
+          content: const Text('Apakah Kamu Ingin Logout?'),
           actions: [
             TextButton(
               onPressed: () => context.pop(),
-              child: const Text('No'),
+              child: const Text('Tidak'),
             ),
             TextButton(
               onPressed: () => context.read<AuthCubit>().logout(),
-              child: const Text('Yes'),
+              child: const Text('Iya'),
             ),
           ],
         ),

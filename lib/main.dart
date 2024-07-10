@@ -10,6 +10,7 @@ import 'package:some_app/src/core/styles/app_theme.dart';
 import 'package:some_app/src/core/util/injections.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_usecase.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_in_usecases.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/logout_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_up_usecase.dart';
@@ -85,6 +86,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
                     getIt<SignUpUseCase>(),
                     getIt<LogoutUseCase>(),
                     getIt<EditUseCase>(),
+                    getIt<RefreshTokenUseCase>(),
                   ),
                 ),
                 BlocProvider<HomeCubit>(
@@ -93,6 +95,8 @@ class _AppState extends State<App> with WidgetsBindingObserver {
                     getIt<UserUseCase>(),
                     getIt<UsersUseCase>(),
                     getIt<VerifyUseCase>(),
+                    getIt<RefreshTokenUseCase>(),
+                    getIt<AuthSharedPrefs>(),
                   ),
                 ),
               ],

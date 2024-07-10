@@ -93,4 +93,22 @@ class AuthImplApi extends AbstractAuthApi {
       throw ServerException(e.toString(), null);
     }
   }
+
+  @override
+  Future<TokenModel> refreshToken() async {
+    try {
+      final result = await dio.post('${Env.urlApiAuth}/refresh');
+      if (result.data == null) {
+        throw ServerException("Unknown Error", result.statusCode);
+      }
+
+      return TokenModel.fromJson(result.data);
+    } on DioException catch (e) {
+      throw ServerException(handleDioError(e), e.response?.statusCode);
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(e.toString(), null);
+    }
+  }
 }

@@ -5,6 +5,7 @@ import 'package:some_app/src/feature/authentication/data/data_sources/remote/aut
 import 'package:some_app/src/feature/authentication/data/repositories/auth_repo_impl.dart';
 import 'package:some_app/src/feature/authentication/domain/repositories/abstract_auth_repo.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_usecase.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_in_usecases.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/logout_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_up_usecase.dart';
@@ -17,4 +18,5 @@ initAuthInjections() {
   getIt.registerSingleton<LogoutUseCase>(LogoutUseCase(getIt()));
   getIt.registerSingleton<SignUpUseCase>(SignUpUseCase(getIt()));
   getIt.registerSingleton<EditUseCase>(EditUseCase(getIt()));
+  getIt.registerSingleton<RefreshTokenUseCase>(RefreshTokenUseCase(getIt()));
 }
