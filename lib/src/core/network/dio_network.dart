@@ -8,6 +8,7 @@ import 'package:some_app/src/core/util/constants/network_constants.dart';
 import 'package:some_app/src/core/util/injections.dart';
 import 'package:some_app/src/core/util/log/app_logger.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
+import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
 
 class DioNetwork {
   static late Dio appAPI;
@@ -58,11 +59,40 @@ class DioNetwork {
         return r.next(options);
       },
       onError: (error, handler) async {
-        try {
+        if (error.response?.statusCode == 401) {
+          // Token expired, try to refresh the token
+          final refreshToken = await _getToken();
+          if (refreshToken != null) {
+            try {
+              final newToken = await _refreshToken();
+              await _saveToken(newToken);
+
+              // Update the failed request with the new token
+              final options = error.requestOptions;
+              options.headers['Authorization'] = 'Bearer ${newToken.accessToken}';
+
+              // Retry the failed request
+              final response = await retryAPI.request(
+                options.path,
+                options: Options(
+                  method: options.method,
+                  headers: options.headers,
+                ),
+                data: options.data,
+                queryParameters: options.queryParameters,
+              );
+
+              return handler.resolve(response);
+            } catch (e) {
+              // Handle token refresh failure (e.g., logout the user)
+              return handler.reject(error);
+            }
+          } else {
+            // Handle missing refresh token (e.g., logout the user)
+            return handler.reject(error);
+          }
+        } else {
           return handler.next(error);
-        } catch (e) {
-          return handler.reject(error);
-          // onUnexpectedError(handler, error);
         }
       },
       onResponse: (Response<dynamic> response, ResponseInterceptorHandler handler) async {
@@ -122,5 +152,19 @@ class DioNetwork {
   static Future<String?> _getToken() async {
     final AuthSharedPrefs authSharedPrefs = getIt<AuthSharedPrefs>();
     return await authSharedPrefs.getToken();
+  }
+
+  static Future<TokenModel> _refreshToken() async {
+    final response = await retryAPI.post('${Env.urlApiAuth}/refresh');
+    if (response.statusCode == 200) {
+      return TokenModel.fromJson(response.data);
+    } else {
+      throw Exception('Failed to refresh token');
+    }
+  }
+
+  static Future<void> _saveToken(TokenModel token) async {
+    final AuthSharedPrefs authSharedPrefs = getIt<AuthSharedPrefs>();
+    await authSharedPrefs.saveToken(token.accessToken!);
   }
 }

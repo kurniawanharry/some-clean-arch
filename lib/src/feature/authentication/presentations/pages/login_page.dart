@@ -216,7 +216,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                               children: [
                                 TextSpan(
-                                  text: 'Daftar Sekarang!',
+                                  text: 'Daftar Sekarang',
                                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                         color: AppColors.third,
                                       ),

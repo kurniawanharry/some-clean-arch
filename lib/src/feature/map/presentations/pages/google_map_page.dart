@@ -35,12 +35,12 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
 
   @override
   void dispose() {
-    _debounce?.cancel();
     if (_controller.isCompleted) {
       _controller.future.then((controller) {
         controller.dispose();
       });
     }
+    _debounce?.cancel();
     super.dispose();
   }
 

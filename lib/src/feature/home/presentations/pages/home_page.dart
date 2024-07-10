@@ -66,6 +66,7 @@ class _HomePageState extends State<HomePage> {
             listener: (context, state) {
               if (state is HomeFailed) {
                 context.read<HomeCubit>().refreshToken(isAdmin);
+                // getIt<AuthSharedPrefs>().removeToken().then((value) => context.go('/'));
               }
             },
             child: BlocBuilder<HomeCubit, HomeState>(
@@ -509,7 +510,7 @@ Future<bool> showExitDialog(BuildContext context) async {
         context: context,
         builder: (context) => AlertDialog(
           title: const Text('Logout'),
-          content: const Text('Apakah Kamu Ingin Logout?'),
+          content: const Text('Apakah kamu yakin ingin keluar?'),
           actions: [
             TextButton(
               onPressed: () => context.pop(),
