@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -216,7 +217,7 @@ class _HomePageState extends State<HomePage> {
                           child: Container(
                             width: double.maxFinite,
                             margin: const EdgeInsets.only(left: 5, top: 10, bottom: 10, right: 10),
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.only(left: 10, right: 10),
                             decoration: BoxDecoration(
                                 color: AppColors.white,
                                 borderRadius: BorderRadius.circular(AppDimens.standarBorder),
@@ -224,18 +225,27 @@ class _HomePageState extends State<HomePage> {
                                   color: AppColors.lightGray,
                                 )),
                             child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
+                              child: DropdownButton2<String>(
                                 value: selectedGender,
-                                icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                                iconSize: 24,
                                 isExpanded: true,
                                 isDense: true,
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                elevation: 0,
+                                iconStyleData: const IconStyleData(
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down,
+                                  ),
+                                ),
+                                dropdownStyleData: DropdownStyleData(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                buttonStyleData: const ButtonStyleData(
+                                  height: 40,
+                                  elevation: 0,
+                                ),
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                       overflow: TextOverflow.fade,
                                     ),
-                                underline: const SizedBox(),
                                 onChanged: (newValue) {
                                   setState(() {
                                     selectedGender = newValue!;
@@ -249,7 +259,6 @@ class _HomePageState extends State<HomePage> {
                                         disabilityName(selectedValue),
                                       );
                                 },
-                                dropdownColor: AppColors.lightGray,
                                 items: ['Semua', 'Laki-Laki', 'Perempuan']
                                     .map<DropdownMenuItem<String>>((String value) {
                                   return DropdownMenuItem<String>(
@@ -257,6 +266,9 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(value == 'Semua' ? 'Semua Gender' : value),
                                   );
                                 }).toList(),
+                                menuItemStyleData: const MenuItemStyleData(
+                                  padding: EdgeInsets.zero,
+                                ),
                               ),
                             ),
                           ),
@@ -264,33 +276,46 @@ class _HomePageState extends State<HomePage> {
                         Flexible(
                           child: Container(
                             width: double.maxFinite,
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             margin: const EdgeInsets.only(left: 5, top: 10, bottom: 10, right: 10),
+                            padding: const EdgeInsets.only(left: 10, right: 10),
                             decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(AppDimens.standarBorder),
-                                border: Border.all(
-                                  color: AppColors.lightGray,
-                                )),
+                              color: AppColors.white,
+                              borderRadius: BorderRadius.circular(AppDimens.standarBorder),
+                              border: Border.all(
+                                color: AppColors.lightGray,
+                              ),
+                            ),
                             child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
+                              child: DropdownButton2<String>(
                                 value: selectedValue,
-                                icon: const Icon(Icons.keyboard_arrow_down_rounded),
-                                iconSize: 24,
                                 isExpanded: true,
                                 isDense: true,
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                elevation: 0,
+                                iconStyleData: const IconStyleData(
+                                  icon: Icon(
+                                    Icons.keyboard_arrow_down,
+                                  ),
+                                ),
+                                dropdownStyleData: DropdownStyleData(
+                                  maxHeight: 300,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                                ),
+                                buttonStyleData: const ButtonStyleData(
+                                  height: 40,
+                                  elevation: 0,
+                                  width: double.maxFinite,
+                                ),
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      overflow: TextOverflow.ellipsis,
+                                      overflow: TextOverflow.fade,
                                     ),
-                                underline: const SizedBox(),
                                 onChanged: (newValue) {
                                   setState(() {
                                     selectedValue = newValue!;
                                   });
                                   context.read<HomeCubit>().filterUsers(
-                                        selectedGender.toLowerCase() == 'Semua'
+                                        selectedGender.toLowerCase() == 'semua'
                                             ? 'semua'
                                             : selectedGender.toLowerCase() == 'laki-laki'
                                                 ? 'male'
@@ -298,7 +323,6 @@ class _HomePageState extends State<HomePage> {
                                         disabilityName(selectedValue),
                                       );
                                 },
-                                dropdownColor: AppColors.lightGray,
                                 items:
                                     disabilityListV2.map<DropdownMenuItem<String>>((String value) {
                                   return DropdownMenuItem<String>(
@@ -306,6 +330,9 @@ class _HomePageState extends State<HomePage> {
                                     child: Text(value == 'Semua' ? 'Semua Disabilitas' : value),
                                   );
                                 }).toList(),
+                                menuItemStyleData: const MenuItemStyleData(
+                                  padding: EdgeInsets.zero,
+                                ),
                               ),
                             ),
                           ),
