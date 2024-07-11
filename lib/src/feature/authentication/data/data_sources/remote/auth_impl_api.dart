@@ -9,6 +9,7 @@ import 'package:some_app/src/feature/authentication/data/models/edit_model.dart'
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
+import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_response_model.dart';
 
 class AuthImplApi extends AbstractAuthApi {
@@ -134,16 +135,16 @@ class AuthImplApi extends AbstractAuthApi {
   }
 
   @override
-  Future<bool> delete(int id) async {
+  Future<UserModel> delete(int id) async {
     try {
-      final result = await dio.delete(
-        '${Env.urlApiAdmin}/users/$id',
+      final result = await dio.post(
+        '${Env.urlApiAdmin}/users/delete/$id',
       );
       if (result.data == null) {
         throw ServerException("Unknown Error", result.statusCode);
       }
 
-      return result.data;
+      return UserModel.fromJson(result.data);
     } on DioException catch (e) {
       throw ServerException(handleDioError(e), e.response?.statusCode);
     } on ServerException {

@@ -6,6 +6,7 @@ import 'package:some_app/src/feature/authentication/data/models/edit_model.dart'
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
+import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_response_model.dart';
 import 'package:some_app/src/feature/authentication/domain/repositories/abstract_auth_repo.dart';
 
@@ -89,7 +90,7 @@ class AuthRepositoryImpl extends AbstractAuthRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> delete(int params) async {
+  Future<Either<Failure, UserModel>> delete(int params) async {
     try {
       final result = await articlesApi.delete(params);
       return Right(result);

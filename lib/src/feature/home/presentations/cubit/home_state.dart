@@ -12,14 +12,7 @@ class HomeInitial extends HomeState {}
 
 class HomeLoading extends HomeState {}
 
-class UserLoading extends HomeState {
-  final int id;
-
-  const UserLoading(this.id);
-
-  @override
-  List<Object> get props => [id];
-}
+class HomeAdminLoading extends HomeState {}
 
 class HomeUserSuccess extends HomeState {
   final UserModel user;
@@ -32,12 +25,15 @@ class HomeUserSuccess extends HomeState {
 
 class HomeUsersSuccess extends HomeState {
   final List<UserModel> users;
+  final bool isLoading;
 
-  const HomeUsersSuccess(this.users);
+  const HomeUsersSuccess(this.users, {this.isLoading = false});
 
   @override
   List<Object> get props => users;
 }
+
+class HomeAdmin extends HomeState {}
 
 class VerifySuccess extends HomeState {
   final UserModel value;

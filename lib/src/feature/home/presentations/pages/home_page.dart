@@ -80,41 +80,42 @@ class _HomePageState extends State<HomePage> {
                       color: AppColors.white,
                     ),
                   );
+                } else if (state is HomeUserSuccess) {
+                  var user = state.user;
+                  return _user(user);
+                } else if (state is HomeUserSuccess) {
+                  var user = state.user;
+                  return _user(user);
+                } else if (state is HomeUsersSuccess) {
+                  return _admin(context, state);
                 } else {
-                  if (state is HomeUserSuccess) {
-                    var user = state.user;
-                    return _user(user);
-                  } else if (state is HomeUsersSuccess) {
-                    return _admin(context, state);
-                  } else {
-                    return Center(
-                      child: Card(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text('Data Tidak Ditemukan'),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () => context.read<HomeCubit>().refreshToken(isAdmin),
-                                child: const Text('Refresh'),
-                              ),
-                              const SizedBox(height: 20),
-                              ElevatedButton(
-                                onPressed: () => getIt<AuthSharedPrefs>()
-                                    .removeToken()
-                                    .then((value) => context.go('/')),
-                                child: const Text('Logout'),
-                              )
-                            ],
-                          ),
+                  return Center(
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('Data Tidak Ditemukan'),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: () => context.read<HomeCubit>().refreshToken(isAdmin),
+                              child: const Text('Refresh'),
+                            ),
+                            const SizedBox(height: 20),
+                            ElevatedButton(
+                              onPressed: () => getIt<AuthSharedPrefs>()
+                                  .removeToken()
+                                  .then((value) => context.go('/')),
+                              child: const Text('Logout'),
+                            )
+                          ],
                         ),
                       ),
-                    );
-                  }
+                    ),
+                  );
                 }
               },
             ),
@@ -176,6 +177,7 @@ class _HomePageState extends State<HomePage> {
                   color: AppColors.white,
                 ),
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
@@ -310,6 +312,12 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
+                    if (state.isLoading)
+                      const Expanded(
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      ),
                     Expanded(
                       child: TabBarView(
                         children: [
@@ -329,149 +337,150 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _users(HomeUsersSuccess state, bool isVerified) {
-    return ListView.separated(
-      separatorBuilder: (context, index) => const Divider(height: 0),
-      itemCount: state.users.where((element) => element.isVerified == isVerified).length,
-      padding: EdgeInsets.zero,
-      itemBuilder: (context, index) {
-        var user = state.users.where((element) => element.isVerified == isVerified).toList()[index];
+    return RefreshIndicator(
+      onRefresh: () => context.read<HomeCubit>().fetchUsers(),
+      child: ListView.separated(
+        separatorBuilder: (context, index) => const Divider(height: 0),
+        itemCount: state.users.where((element) => element.isVerified == isVerified).length,
+        padding: EdgeInsets.zero,
+        itemBuilder: (context, index) {
+          var user =
+              state.users.where((element) => element.isVerified == isVerified).toList()[index];
 
-        return BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
-          if (state is UserLoading && state.id == user.id) {
-            return const CircularProgressIndicator();
-          }
-          return Material(
-            child: ListTile(
-              title: Text('${user.name}'),
-              subtitle: Text('${user.nik}'),
-              tileColor: AppColors.white,
-              trailing: PopupMenuButton<String>(
-                onSelected: (String result) async {
-                  if (result == 'Verifikasi') {
-                    context.read<HomeCubit>().toggleVerification(
-                          user.id!,
-                          !isVerified,
-                        );
-                  } else if (result == 'Delete') {
-                    context.read<HomeCubit>().deleteUser(
-                          user.id!,
-                          user,
-                        );
-                  } else {
-                    var result = await context.push(
-                      '/register/details/${Uri.decodeComponent(json.encode(user))}&${isAdmin ? '100' : '200'}',
-                    ) as UserModel?;
+          return BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
+            return Material(
+              child: ListTile(
+                title: Text('${user.name}'),
+                subtitle: Text('${user.nik}'),
+                tileColor: AppColors.white,
+                trailing: PopupMenuButton<String>(
+                  onSelected: (String result) async {
+                    if (result == 'Verifikasi') {
+                      context.read<HomeCubit>().toggleVerification(
+                            user.id!,
+                            !isVerified,
+                          );
+                    } else if (result == 'Delete') {
+                      context.read<HomeCubit>().deleteUser(
+                            user.id!,
+                            user,
+                          );
+                    } else {
+                      var result = await context.push(
+                        '/register/details/${Uri.decodeComponent(json.encode(user))}&${isAdmin ? '100' : '200'}',
+                      ) as UserModel?;
 
-                    if (result != null) {
-                      setState(() {
-                        context.read<HomeCubit>().updateUser(user.id!, result);
-                      });
+                      if (result != null) {
+                        setState(() {
+                          context.read<HomeCubit>().updateUser(user.id!, result);
+                        });
+                      }
                     }
-                  }
-                },
-                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                  PopupMenuItem<String>(
-                    value: 'Verifikasi',
-                    child: ListTile(
-                      leading: const Icon(Icons.verified_outlined),
-                      title: Text('${isVerified ? 'Batalkan' : ''} Verifikasi'),
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'Verifikasi',
+                      child: ListTile(
+                        leading: const Icon(Icons.verified_outlined),
+                        title: Text('${isVerified ? 'Batalkan' : ''} Verifikasi'),
+                      ),
                     ),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'Edit',
-                    child: ListTile(
-                      leading: Icon(Icons.edit_outlined),
-                      title: Text('Edit'),
+                    const PopupMenuItem<String>(
+                      value: 'Edit',
+                      child: ListTile(
+                        leading: Icon(Icons.edit_outlined),
+                        title: Text('Edit'),
+                      ),
                     ),
-                  ),
-                  const PopupMenuItem<String>(
-                    value: 'Delete',
-                    child: ListTile(
-                      leading: Icon(Icons.delete_outline),
-                      title: Text('Hapus'),
+                    const PopupMenuItem<String>(
+                      value: 'Delete',
+                      child: ListTile(
+                        leading: Icon(Icons.delete_outline),
+                        title: Text('Hapus'),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              onTap: () async {
-                return showModalBottomSheet(
-                  // ignore: use_build_context_synchronously
-                  context: context,
-                  backgroundColor: AppColors.main,
-                  isScrollControlled: true,
-                  builder: (context) {
-                    return FractionallySizedBox(
-                      heightFactor: 0.9,
-                      child: Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: MapScreen(
-                                latitude: double.parse(user.latitude ?? '0.0'),
-                                longitude: double.parse(user.longitude ?? '0.0'),
+                  ],
+                ),
+                onTap: () async {
+                  return showModalBottomSheet(
+                    // ignore: use_build_context_synchronously
+                    context: context,
+                    backgroundColor: AppColors.main,
+                    isScrollControlled: true,
+                    builder: (context) {
+                      return FractionallySizedBox(
+                        heightFactor: 0.9,
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(10.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: MapScreen(
+                                  latitude: double.parse(user.latitude ?? '0.0'),
+                                  longitude: double.parse(user.longitude ?? '0.0'),
+                                ),
                               ),
                             ),
-                          ),
-                          Expanded(
-                            child: Material(
-                              child: ListView(
-                                children: [
-                                  ListTile(
-                                    title: const Text('NIK'),
-                                    subtitle: Text('${user.nik}'),
-                                  ),
-                                  ListTile(
-                                    title: const Text('Name'),
-                                    subtitle: Text('${user.name}'),
-                                    tileColor: AppColors.lightGray,
-                                  ),
-                                  ListTile(
-                                    title: const Text('Alamat'),
-                                    subtitle: Text('${user.address}'),
-                                  ),
-                                  ListTile(
-                                    title: const Text('Tanggal Lahir'),
-                                    subtitle: Text(
-                                      DateFormat.yMMMMEEEEd('ID').format(
-                                        DateFormat('yyyy-MM-dd').parse(user.birthDate!),
+                            Expanded(
+                              child: Material(
+                                child: ListView(
+                                  children: [
+                                    ListTile(
+                                      title: const Text('NIK'),
+                                      subtitle: Text('${user.nik}'),
+                                    ),
+                                    ListTile(
+                                      title: const Text('Name'),
+                                      subtitle: Text('${user.name}'),
+                                      tileColor: AppColors.lightGray,
+                                    ),
+                                    ListTile(
+                                      title: const Text('Alamat'),
+                                      subtitle: Text('${user.address}'),
+                                    ),
+                                    ListTile(
+                                      title: const Text('Tanggal Lahir'),
+                                      subtitle: Text(
+                                        DateFormat.yMMMMEEEEd('ID').format(
+                                          DateFormat('yyyy-MM-dd').parse(user.birthDate!),
+                                        ),
+                                      ),
+                                      tileColor: AppColors.lightGray,
+                                    ),
+                                    ListTile(
+                                      title: const Text('Disabilitas'),
+                                      subtitle: Text(
+                                        disabilityType(user.disability!),
                                       ),
                                     ),
-                                    tileColor: AppColors.lightGray,
-                                  ),
-                                  ListTile(
-                                    title: const Text('Disabilitas'),
-                                    subtitle: Text(
-                                      disabilityType(user.disability!),
+                                    ListTile(
+                                      title: const Text('Jenis Kelamin'),
+                                      subtitle:
+                                          Text(user.gender == 'male' ? 'Laki-Laki' : 'Perempuan'),
+                                      tileColor: AppColors.lightGray,
                                     ),
-                                  ),
-                                  ListTile(
-                                    title: const Text('Jenis Kelamin'),
-                                    subtitle:
-                                        Text(user.gender == 'male' ? 'Laki-Laki' : 'Perempuan'),
-                                    tileColor: AppColors.lightGray,
-                                  ),
-                                  ListTile(
-                                    title: const Text('Status Verifikasi'),
-                                    subtitle: Text(user.isVerified ?? false
-                                        ? 'Sudah Terverifikasi'
-                                        : 'Belum Terverifikasi'),
-                                  ),
-                                ],
+                                    ListTile(
+                                      title: const Text('Status Verifikasi'),
+                                      subtitle: Text(user.isVerified ?? false
+                                          ? 'Sudah Terverifikasi'
+                                          : 'Belum Terverifikasi'),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          );
-        });
-      },
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            );
+          });
+        },
+      ),
     );
   }
 

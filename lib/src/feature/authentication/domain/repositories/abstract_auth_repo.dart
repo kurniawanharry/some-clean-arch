@@ -4,6 +4,7 @@ import 'package:some_app/src/feature/authentication/data/models/edit_model.dart'
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
+import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_response_model.dart';
 
 abstract class AbstractAuthRepository {
@@ -12,6 +13,6 @@ abstract class AbstractAuthRepository {
   Future<Either<Failure, TokenModel>> refreshToken();
   Future<Either<Failure, bool>> edit(EditModel params);
   Future<Either<Failure, UserResponseModel>> editById(int id, EditModel params);
-  Future<Either<Failure, bool>> delete(int params);
+  Future<Either<Failure, UserModel>> delete(int params);
   Future<Either<Failure, dynamic>> logout();
 }
