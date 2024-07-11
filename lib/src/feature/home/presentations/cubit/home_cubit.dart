@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:some_app/src/core/util/usescases/usecases.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/delete_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/user_id_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/user_usecase.dart';
@@ -17,6 +18,7 @@ class HomeCubit extends Cubit<HomeState> {
   final UsersUseCase usersUseCase;
   final UserIdUseCase userIdUseCase;
   final VerifyUseCase verifyUseCase;
+  final DeleteUseCase deleteUseCase;
   final RefreshTokenUseCase refreshUseCase;
   final AuthSharedPrefs authSharedPrefs;
 
@@ -29,6 +31,7 @@ class HomeCubit extends Cubit<HomeState> {
     this.usersUseCase,
     this.verifyUseCase,
     this.refreshUseCase,
+    this.deleteUseCase,
     this.authSharedPrefs,
   ) : super(HomeInitial());
 
@@ -75,7 +78,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   toggleVerification(int id, bool value) async {
     try {
-      emit(UserLoading());
+      emit(UserLoading(id));
 
       var index = allUsers.indexWhere((element) => element.id == id);
       if (index != -1) {
@@ -97,6 +100,30 @@ class HomeCubit extends Cubit<HomeState> {
         var index = allUsers.indexWhere((element) => element.id == r.id);
         allUsers[index].isVerified = r.isVerified;
         emit(HomeUsersSuccess(allUsers));
+      });
+    } catch (e) {
+      emit(HomeFailure(e.toString()));
+    }
+  }
+
+  deleteUser(int id, UserModel? model) async {
+    try {
+      emit(UserLoading(id));
+
+      var index = allUsers.indexWhere((element) => element.id == id);
+      if (index != -1) {
+        allUsers.removeAt(index);
+        emit(HomeUsersSuccess(allUsers));
+      }
+
+      final result = await deleteUseCase.call(id);
+
+      result.fold((l) {
+        emit(HomeFailure(l.errorMessage));
+        allUsers.insert(index, model!);
+        emit(HomeUsersSuccess(allUsers));
+      }, (r) async {
+        emit(HomeDeleted());
       });
     } catch (e) {
       emit(HomeFailure(e.toString()));
@@ -140,5 +167,12 @@ class HomeCubit extends Cubit<HomeState> {
     } catch (error) {
       emit(HomeFailure(error.toString()));
     }
+  }
+
+  updateUser(int id, UserModel model) {
+    var index = allUsers.indexWhere((element) => element.id == id);
+
+    allUsers[index] = model;
+    emit(HomeUsersSuccess(allUsers));
   }
 }

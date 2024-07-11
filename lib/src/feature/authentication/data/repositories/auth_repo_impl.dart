@@ -5,8 +5,8 @@ import 'package:some_app/src/feature/authentication/data/data_sources/remote/aut
 import 'package:some_app/src/feature/authentication/data/models/edit_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
-import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
+import 'package:some_app/src/feature/authentication/data/models/user_response_model.dart';
 import 'package:some_app/src/feature/authentication/domain/repositories/abstract_auth_repo.dart';
 
 class AuthRepositoryImpl extends AbstractAuthRepository {
@@ -41,7 +41,7 @@ class AuthRepositoryImpl extends AbstractAuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserModel>> signUp(SignUpModel params) async {
+  Future<Either<Failure, UserResponseModel>> signUp(SignUpModel params) async {
     try {
       final result = await articlesApi.signUp(params);
       return Right(result);
@@ -68,6 +68,30 @@ class AuthRepositoryImpl extends AbstractAuthRepository {
   Future<Either<Failure, TokenModel>> refreshToken() async {
     try {
       final result = await articlesApi.refreshToken();
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    } on CancelTokenException catch (e) {
+      return Left(CancelTokenFailure(e.message, e.statusCode));
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserResponseModel>> editById(int id, EditModel params) async {
+    try {
+      final result = await articlesApi.editById(id, params);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    } on CancelTokenException catch (e) {
+      return Left(CancelTokenFailure(e.message, e.statusCode));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> delete(int params) async {
+    try {
+      final result = await articlesApi.delete(params);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));

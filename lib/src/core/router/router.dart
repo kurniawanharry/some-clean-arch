@@ -31,12 +31,15 @@ class AppRouter {
         builder: (context, state) => const RegisterPage(),
         routes: [
           GoRoute(
-            path: 'details/:data',
+            path: 'details/:data&:type',
             builder: (context, state) {
               final jsonData = Uri.decodeComponent(state.pathParameters['data']!);
               final data = json.decode(jsonData) as Map<String, dynamic>;
+
+              final type = state.pathParameters['type'];
               return RegisterPage(
                 data: UserModel.fromJson(data),
+                type: int.tryParse(type ?? '100'),
               );
             },
           ),

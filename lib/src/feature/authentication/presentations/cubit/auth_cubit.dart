@@ -6,8 +6,9 @@ import 'package:some_app/src/feature/authentication/data/data_sources/local/auth
 import 'package:some_app/src/feature/authentication/data/models/edit_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
-import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
+import 'package:some_app/src/feature/authentication/data/models/user_response_model.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/edit_by_id_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_in_usecases.dart';
@@ -21,6 +22,7 @@ class AuthCubit extends Cubit<AuthState> {
   final SignUpUseCase signUpUseCase;
   final LogoutUseCase logoutUseCase;
   final EditUseCase editUseCase;
+  final EditByIdUseCase editByIdUseCase;
   final RefreshTokenUseCase refreshUseCase;
   final AuthSharedPrefs authSharedPrefs;
 
@@ -30,6 +32,7 @@ class AuthCubit extends Cubit<AuthState> {
     this.signUpUseCase,
     this.logoutUseCase,
     this.editUseCase,
+    this.editByIdUseCase,
     this.refreshUseCase,
   ) : super(AuthInitial());
 
@@ -73,6 +76,20 @@ class AuthCubit extends Cubit<AuthState> {
         emit(AuthFailure(l.errorMessage));
       }, (r) async {
         emit(AuthEditSucceed());
+      });
+    } catch (error) {
+      emit(AuthFailure(error.toString()));
+    }
+  }
+
+  Future<void> editById(int id, EditModel params) async {
+    try {
+      emit(AuthLoading());
+      final result = await editByIdUseCase.call(EditIdParams(firstValue: id, secondValue: params));
+      result.fold((l) {
+        emit(AuthFailure(l.errorMessage));
+      }, (r) async {
+        emit(AuthEditByIdSucceed(r));
       });
     } catch (error) {
       emit(AuthFailure(error.toString()));

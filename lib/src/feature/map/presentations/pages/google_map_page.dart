@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -18,7 +17,7 @@ class GoogleMapPage extends StatefulWidget {
 
 class _GoogleMapPageState extends State<GoogleMapPage> {
   final Completer<GoogleMapController> _controller = Completer();
-  static const LatLng _center = LatLng(37.7749, -122.4194);
+  static const LatLng _center = LatLng(0, 0);
   LatLng _currentPosition = _center;
   String _currentAddress = '';
   Timer? _debounce;
@@ -55,7 +54,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
               onMapCreated: _onMapCreated,
               initialCameraPosition: CameraPosition(
                 target: _currentPosition,
-                zoom: 15.0,
+                zoom: 1.0,
               ),
               onCameraMove: _onCameraMove,
               myLocationEnabled: false,
@@ -179,9 +178,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
 
   Future<void> _getCurrentLocation() async {
     Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    setState(() {
-      _currentPosition = LatLng(position.latitude, position.longitude);
-    });
+    _currentPosition = LatLng(position.latitude, position.longitude);
     _getAddressFromLatLng(_currentPosition);
     _controller.future
         .then((value) => value.animateCamera(CameraUpdate.newLatLngZoom(_currentPosition, 18.0)));
@@ -202,18 +199,9 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
       Placemark place = placemarks[0];
       setState(() {
         _currentAddress =
-            '${place.street},${place.subLocality}, ${place.locality}, ${place.subAdministrativeArea}, ${place.administrativeArea}';
+            "${place.street}, ${place.subLocality}, ${place.locality}, ${place.subAdministrativeArea}, ${place.administrativeArea}, ${place.country}";
       });
-    } catch (e) {
-      Fluttertoast.showToast(
-        msg: e.toString(),
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0,
-      );
-    }
+      // ignore: empty_catches
+    } catch (e) {}
   }
 }

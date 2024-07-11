@@ -9,6 +9,8 @@ import 'package:some_app/src/core/router/router.dart';
 import 'package:some_app/src/core/styles/app_theme.dart';
 import 'package:some_app/src/core/util/injections.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/delete_usecase.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/edit_by_id_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_in_usecases.dart';
@@ -86,6 +88,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
                     getIt<SignUpUseCase>(),
                     getIt<LogoutUseCase>(),
                     getIt<EditUseCase>(),
+                    getIt<EditByIdUseCase>(),
                     getIt<RefreshTokenUseCase>(),
                   ),
                 ),
@@ -96,6 +99,7 @@ class _AppState extends State<App> with WidgetsBindingObserver {
                     getIt<UsersUseCase>(),
                     getIt<VerifyUseCase>(),
                     getIt<RefreshTokenUseCase>(),
+                    getIt<DeleteUseCase>(),
                     getIt<AuthSharedPrefs>(),
                   ),
                 ),

@@ -1,18 +1,16 @@
 import 'package:dartz/dartz.dart';
 import 'package:some_app/src/core/network/error/failure.dart';
 import 'package:some_app/src/core/util/usescases/usecases.dart';
-import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
-import 'package:some_app/src/feature/authentication/data/models/user_response_model.dart';
 import 'package:some_app/src/feature/authentication/domain/repositories/abstract_auth_repo.dart';
 
-class SignUpUseCase extends UseCase<UserResponseModel, SignUpModel> {
+class DeleteUseCase extends UseCase<bool, int> {
   final AbstractAuthRepository repository;
 
-  SignUpUseCase(this.repository);
+  DeleteUseCase(this.repository);
 
   @override
-  Future<Either<Failure, UserResponseModel>> call(params) async {
-    final result = await repository.signUp(params);
+  Future<Either<Failure, bool>> call(params) async {
+    final result = await repository.delete(params);
     return result.fold((l) {
       return Left(l);
     }, (r) async {

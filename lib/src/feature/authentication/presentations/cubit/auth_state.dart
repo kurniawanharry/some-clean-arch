@@ -33,7 +33,7 @@ class AuthFailure extends AuthState {
 class AuthLoggedOut extends AuthState {}
 
 class AuthRegistered extends AuthState {
-  final UserModel user;
+  final UserResponseModel user;
 
   const AuthRegistered(this.user);
 
@@ -42,3 +42,12 @@ class AuthRegistered extends AuthState {
 }
 
 class AuthEditSucceed extends AuthState {}
+
+class AuthEditByIdSucceed extends AuthState {
+  final UserResponseModel model;
+
+  const AuthEditByIdSucceed(this.model);
+
+  @override
+  List<Object> get props => [model];
+}

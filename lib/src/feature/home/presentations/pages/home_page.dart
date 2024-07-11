@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/core/styles/app_dimens.dart';
+import 'package:some_app/src/core/util/injections.dart';
+import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/presentations/cubit/auth_cubit.dart';
 import 'package:some_app/src/feature/authentication/presentations/pages/register_page.dart';
@@ -65,8 +67,8 @@ class _HomePageState extends State<HomePage> {
             bloc: _cubit,
             listener: (context, state) {
               if (state is HomeFailed) {
-                context.read<HomeCubit>().refreshToken(isAdmin);
-                // getIt<AuthSharedPrefs>().removeToken().then((value) => context.go('/'));
+                // context.read<HomeCubit>().refreshToken(isAdmin);
+                getIt<AuthSharedPrefs>().removeToken().then((value) => context.go('/'));
               }
             },
             child: BlocBuilder<HomeCubit, HomeState>(
@@ -86,14 +88,30 @@ class _HomePageState extends State<HomePage> {
                     return _admin(context, state);
                   } else {
                     return Center(
-                      child: Column(
-                        children: [
-                          const Text('Data Tidak Ditemukan'),
-                          ElevatedButton(
-                            onPressed: () => context.read<HomeCubit>().refreshToken(isAdmin),
-                            child: const Text('Refresh'),
-                          )
-                        ],
+                      child: Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('Data Tidak Ditemukan'),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () => context.read<HomeCubit>().refreshToken(isAdmin),
+                                child: const Text('Refresh'),
+                              ),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () => getIt<AuthSharedPrefs>()
+                                    .removeToken()
+                                    .then((value) => context.go('/')),
+                                child: const Text('Logout'),
+                              )
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   }
@@ -319,7 +337,7 @@ class _HomePageState extends State<HomePage> {
         var user = state.users.where((element) => element.isVerified == isVerified).toList()[index];
 
         return BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
-          if (state is UserLoading) {
+          if (state is UserLoading && state.id == user.id) {
             return const CircularProgressIndicator();
           }
           return Material(
@@ -327,13 +345,53 @@ class _HomePageState extends State<HomePage> {
               title: Text('${user.name}'),
               subtitle: Text('${user.nik}'),
               tileColor: AppColors.white,
-              trailing: Switch.adaptive(
-                activeTrackColor: AppColors.secondary,
-                value: user.isVerified ?? false,
-                onChanged: (value) => context.read<HomeCubit>().toggleVerification(
-                      user.id!,
-                      value,
+              trailing: PopupMenuButton<String>(
+                onSelected: (String result) async {
+                  if (result == 'Verifikasi') {
+                    context.read<HomeCubit>().toggleVerification(
+                          user.id!,
+                          !isVerified,
+                        );
+                  } else if (result == 'Delete') {
+                    context.read<HomeCubit>().deleteUser(
+                          user.id!,
+                          user,
+                        );
+                  } else {
+                    var result = await context.push(
+                      '/register/details/${Uri.decodeComponent(json.encode(user))}&${isAdmin ? '100' : '200'}',
+                    ) as UserModel?;
+
+                    if (result != null) {
+                      setState(() {
+                        context.read<HomeCubit>().updateUser(user.id!, result);
+                      });
+                    }
+                  }
+                },
+                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                  PopupMenuItem<String>(
+                    value: 'Verifikasi',
+                    child: ListTile(
+                      leading: const Icon(Icons.verified_outlined),
+                      title: Text('${isVerified ? 'Batalkan' : ''} Verifikasi'),
                     ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'Edit',
+                    child: ListTile(
+                      leading: Icon(Icons.edit_outlined),
+                      title: Text('Edit'),
+                    ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'Delete',
+                    child: ListTile(
+                      leading: Icon(Icons.delete_outline),
+                      title: Text('Hapus'),
+                    ),
+                  ),
+                ],
               ),
               onTap: () async {
                 return showModalBottomSheet(

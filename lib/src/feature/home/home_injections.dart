@@ -1,5 +1,6 @@
 import 'package:some_app/src/core/network/dio_network.dart';
 import 'package:some_app/src/core/util/injections.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/delete_usecase.dart';
 import 'package:some_app/src/feature/home/data/data_sources/local/home_shared_prefs.dart';
 import 'package:some_app/src/feature/home/data/data_sources/remote/home_impl_api.dart';
 import 'package:some_app/src/feature/home/data/repositories/home_repo_impl.dart';
@@ -17,4 +18,5 @@ initHomeInjections() {
   getIt.registerSingleton<UsersUseCase>(UsersUseCase(getIt()));
   getIt.registerSingleton<UserIdUseCase>(UserIdUseCase(getIt()));
   getIt.registerSingleton<VerifyUseCase>(VerifyUseCase(getIt()));
+  getIt.registerSingleton<DeleteUseCase>(DeleteUseCase(getIt()));
 }

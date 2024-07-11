@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
@@ -17,9 +18,14 @@ import 'package:location/location.dart' as loc;
 import 'package:some_app/src/feature/home/presentations/pages/home_page.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key, this.data});
+  const RegisterPage({
+    super.key,
+    this.data,
+    this.type,
+  });
 
   final UserModel? data;
+  final int? type;
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -74,6 +80,18 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   @override
+  void dispose() {
+    nikController.dispose();
+    nameController.dispose();
+    birthController.dispose();
+    dateController.dispose();
+    addressController.dispose();
+    passwordController.dispose();
+    cPasswordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -123,30 +141,40 @@ class _RegisterPageState extends State<RegisterPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextFormField(
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           controller: nikController,
+                          keyboardType: TextInputType.number,
                           decoration: InputDecoration(
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
-                            constraints: const BoxConstraints(minHeight: 40, maxHeight: 45),
+                            constraints: const BoxConstraints(minHeight: 40),
                             hintText: 'NIK',
                             prefixIcon: Icon(
                               MdiIcons.identifier,
                             ),
                           ),
+                          inputFormatters: [
+                            LengthLimitingTextInputFormatter(16),
+                            TextInputFormatter.withFunction((oldValue, newValue) =>
+                                RegExp(r'^[0-9]*$').hasMatch(newValue.text) ? newValue : oldValue),
+                          ],
                           validator: (value) {
-                            if (value?.isEmpty ?? false) {
-                              return 'Data Kosong';
+                            if (value!.isEmpty) {
+                              return 'NIK Masih Kosong';
+                            } else if (value.length < 16) {
+                              return 'Pastikan NIK anda sudah 16 digit';
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 12),
                         TextFormField(
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           controller: nameController,
                           decoration: InputDecoration(
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
-                            constraints: const BoxConstraints(minHeight: 40, maxHeight: 45),
+                            constraints: const BoxConstraints(minHeight: 40),
                             hintText: 'Nama',
                             prefixIcon: Icon(
                               MdiIcons.accountOutline,
@@ -154,7 +182,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           validator: (value) {
                             if (value?.isEmpty ?? false) {
-                              return 'Data Kosong';
+                              return 'Nama Masih Kosong';
                             }
 
                             return null;
@@ -163,27 +191,28 @@ class _RegisterPageState extends State<RegisterPage> {
                         if (widget.data == null) ...[
                           const SizedBox(height: 12),
                           TextFormField(
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
                             controller: passwordController,
                             obscureText: !showPassword,
                             decoration: InputDecoration(
                               isDense: true,
                               contentPadding:
                                   EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
-                              constraints: const BoxConstraints(minHeight: 40, maxHeight: 45),
+                              constraints: const BoxConstraints(minHeight: 40),
                               hintText: 'Password',
                               prefixIcon: Icon(
                                 MdiIcons.lockOutline,
                               ),
                               suffixIcon: GestureDetector(
-                                onTap: () => toggleCPassword(),
+                                onTap: () => togglePassword(),
                                 child: Icon(
-                                  showCPassword ? MdiIcons.eyeOutline : MdiIcons.eyeOffOutline,
+                                  showPassword ? MdiIcons.eyeOutline : MdiIcons.eyeOffOutline,
                                 ),
                               ),
                             ),
                             validator: (value) {
                               if (value?.isEmpty ?? false) {
-                                return 'Data Kosong';
+                                return 'Password Masih Kosong';
                               } else if (value!.length < 6) {
                                 return 'Password minimal 6 karakter';
                               } else if (passwordController.value.text !=
@@ -195,13 +224,14 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 12),
                           TextFormField(
+                            autovalidateMode: AutovalidateMode.onUserInteraction,
                             controller: cPasswordController,
                             obscureText: !showCPassword,
                             decoration: InputDecoration(
                               isDense: true,
                               contentPadding:
                                   EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
-                              constraints: const BoxConstraints(minHeight: 40, maxHeight: 45),
+                              constraints: const BoxConstraints(minHeight: 40),
                               hintText: 'Confirm Password',
                               prefixIcon: Icon(
                                 MdiIcons.lockOutline,
@@ -215,7 +245,7 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                             validator: (value) {
                               if (value?.isEmpty ?? false) {
-                                return 'Data Kosong';
+                                return 'Confirm Password Masih Kosong';
                               } else if (value!.length < 6) {
                                 return 'Password minimal 6 karakter';
                               } else if (passwordController.value.text !=
@@ -316,18 +346,12 @@ class _RegisterPageState extends State<RegisterPage> {
                               isDense: true,
                               contentPadding:
                                   EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
-                              constraints: const BoxConstraints(minHeight: 40, maxHeight: 45),
+                              constraints: const BoxConstraints(minHeight: 40),
                               hintText: 'Tanggal lahir',
                               prefixIcon: Icon(
                                 MdiIcons.calendarAccountOutline,
                               ),
                             ),
-                            validator: (value) {
-                              if (value?.isEmpty ?? false) {
-                                return 'Data Kosong';
-                              }
-                              return null;
-                            },
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -378,6 +402,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 20),
                         TextFormField(
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
                           controller: addressController,
                           decoration: InputDecoration(
                             isDense: true,
@@ -391,7 +416,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           maxLines: 4,
                           validator: (value) {
                             if (value?.isEmpty ?? false) {
-                              return 'Data Kosong';
+                              return 'Alamat Masih Kosong';
                             }
                             return null;
                           },
@@ -407,17 +432,16 @@ class _RegisterPageState extends State<RegisterPage> {
                           onPressed: () async {
                             FocusManager.instance.primaryFocus?.unfocus();
                             var result = await context.pushNamed('map') as Map?;
-                            if (result == null) {
-                              return;
-                            }
-                            setState(() {
-                              String address = result['address']!!;
-                              var lat = result['lat'];
-                              var lng = result['lng'];
+                            if (result != null) {
+                              setState(() {
+                                String address = result['address']!!;
+                                var lat = result['lat'];
+                                var lng = result['lng'];
 
-                              addressController.text = address;
-                              latLng = LatLng(lat, lng);
-                            });
+                                addressController.text = address;
+                                latLng = LatLng(lat, lng);
+                              });
+                            }
                           },
                           icon: const Icon(Icons.location_on_outlined, size: 18),
                           label: const Text('Pilih alamat dari Google Map'),
@@ -449,7 +473,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
                           if (state is AuthSuccess) {
                             // Navigate to the next screen
-                            context.goNamed('home');
+                            context.goNamed('home', pathParameters: {
+                              'type': '200',
+                            });
                           }
 
                           if (state is AuthFailure) {
@@ -461,6 +487,25 @@ class _RegisterPageState extends State<RegisterPage> {
 
                           if (state is AuthEditSucceed) {
                             context.goNamed('home', pathParameters: {'type': '200'});
+                          }
+
+                          if (state is AuthEditByIdSucceed) {
+                            context.pop(
+                              UserModel(
+                                id: state.model.id,
+                                nik: state.model.nik,
+                                name: state.model.name,
+                                address: state.model.address,
+                                birthDate: state.model.birthDate,
+                                disability: state.model.disability,
+                                gender: state.model.gender,
+                                isVerified: state.model.isVerified,
+                                latitude: state.model.latitude.toString(),
+                                longitude: state.model.longitude.toString(),
+                                createdAt: state.model.createdAt,
+                                updatedAt: state.model.updatedAt,
+                              ),
+                            );
                           }
                         },
                         builder: (context, state) {
@@ -477,6 +522,16 @@ class _RegisterPageState extends State<RegisterPage> {
                               // final birth = birthController.value.text;
                               final date = dateController.value.text;
                               final password = passwordController.value.text;
+
+                              if (date.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        'Tanggal Lahir Masih Kosong, Harap Diisi Terlebih Dahulu'),
+                                  ),
+                                );
+                                return;
+                              }
 
                               DateTime temp = DateFormat('dd-MM-yyyy').parse(date);
 
@@ -516,8 +571,17 @@ class _RegisterPageState extends State<RegisterPage> {
                                   latitude: latLng?.latitude,
                                   longitude: latLng?.longitude,
                                 );
-                                // ignore: use_build_context_synchronously
-                                context.read<AuthCubit>().edit(request);
+
+                                if (widget.type == 100) {
+                                  // ignore: use_build_context_synchronously
+                                  context.read<AuthCubit>().editById(
+                                        widget.data!.id!,
+                                        request,
+                                      );
+                                } else {
+                                  // ignore: use_build_context_synchronously
+                                  context.read<AuthCubit>().edit(request);
+                                }
                               }
 
                               // context.pushNamed('register');
@@ -566,13 +630,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     children: [
                       Text(
                         'Pilih Tanggal',
-                        style: Theme.of(context).textTheme.labelMedium,
+                        style: Theme.of(context).textTheme.bodyLarge,
                       ),
                       TextButton(
                         style: TextButton.styleFrom(
-                          textStyle: Theme.of(context).textTheme.labelMedium?.copyWith(
-                                fontSize: 14,
-                              ),
+                          textStyle: Theme.of(context).textTheme.bodyLarge,
+                          foregroundColor: AppColors.third,
                         ),
                         onPressed: () {
                           final DateFormat formatter = DateFormat('dd-MM-yyyy');

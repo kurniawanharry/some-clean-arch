@@ -8,8 +8,8 @@ import 'package:some_app/src/feature/authentication/data/data_sources/remote/abs
 import 'package:some_app/src/feature/authentication/data/models/edit_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
-import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
+import 'package:some_app/src/feature/authentication/data/models/user_response_model.dart';
 
 class AuthImplApi extends AbstractAuthApi {
   final Dio dio;
@@ -37,7 +37,7 @@ class AuthImplApi extends AbstractAuthApi {
   }
 
   @override
-  Future<UserModel> signUp(SignUpModel params) async {
+  Future<UserResponseModel> signUp(SignUpModel params) async {
     try {
       final result =
           await dio.post('${Env.urlApiAuth}/register', data: jsonEncode(params.toJson()));
@@ -45,7 +45,7 @@ class AuthImplApi extends AbstractAuthApi {
         throw ServerException("Unknown Error", result.statusCode);
       }
 
-      return UserModel.fromJson(result.data);
+      return UserResponseModel.fromJson(result.data);
     } on DioException catch (e) {
       throw ServerException(handleDioError(e), e.response?.statusCode);
     } on ServerException {
@@ -103,6 +103,47 @@ class AuthImplApi extends AbstractAuthApi {
       }
 
       return TokenModel.fromJson(result.data);
+    } on DioException catch (e) {
+      throw ServerException(handleDioError(e), e.response?.statusCode);
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(e.toString(), null);
+    }
+  }
+
+  @override
+  Future<UserResponseModel> editById(int id, EditModel params) async {
+    try {
+      final result = await dio.post(
+        '${Env.urlApiAdmin}/users/$id',
+        data: jsonEncode(params.toJson()),
+      );
+      if (result.data == null) {
+        throw ServerException("Unknown Error", result.statusCode);
+      }
+
+      return UserResponseModel.fromJson(result.data);
+    } on DioException catch (e) {
+      throw ServerException(handleDioError(e), e.response?.statusCode);
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(e.toString(), null);
+    }
+  }
+
+  @override
+  Future<bool> delete(int id) async {
+    try {
+      final result = await dio.delete(
+        '${Env.urlApiAdmin}/users/$id',
+      );
+      if (result.data == null) {
+        throw ServerException("Unknown Error", result.statusCode);
+      }
+
+      return result.data;
     } on DioException catch (e) {
       throw ServerException(handleDioError(e), e.response?.statusCode);
     } on ServerException {
