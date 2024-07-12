@@ -54,7 +54,7 @@ class AuthRepositoryImpl extends AbstractAuthRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> edit(EditModel params) async {
+  Future<Either<Failure, UserResponseModel>> edit(EditModel params) async {
     try {
       final result = await articlesApi.edit(params);
       return Right(result);

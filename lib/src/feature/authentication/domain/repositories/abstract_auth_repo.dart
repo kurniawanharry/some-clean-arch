@@ -11,7 +11,7 @@ abstract class AbstractAuthRepository {
   Future<Either<Failure, TokenModel>> signIn(SignInModel params);
   Future<Either<Failure, UserResponseModel>> signUp(SignUpModel params);
   Future<Either<Failure, TokenModel>> refreshToken();
-  Future<Either<Failure, bool>> edit(EditModel params);
+  Future<Either<Failure, UserResponseModel>> edit(EditModel params);
   Future<Either<Failure, UserResponseModel>> editById(int id, EditModel params);
   Future<Either<Failure, UserModel>> delete(int params);
   Future<Either<Failure, dynamic>> logout();

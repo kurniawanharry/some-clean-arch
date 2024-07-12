@@ -11,7 +11,7 @@ abstract class AbstractAuthApi {
 
   Future<UserResponseModel> signUp(SignUpModel params);
 
-  Future<bool> edit(EditModel params);
+  Future<UserResponseModel> edit(EditModel params);
 
   Future<UserResponseModel> editById(int id, EditModel params);
 

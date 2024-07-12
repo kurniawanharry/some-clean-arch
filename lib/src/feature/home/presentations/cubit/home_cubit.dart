@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:some_app/src/core/network/error/failure.dart';
 import 'package:some_app/src/core/util/usescases/usecases.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
@@ -40,7 +41,11 @@ class HomeCubit extends Cubit<HomeState> {
       emit(HomeLoading());
       final result = await userUseCase.call(NoParams());
       result.fold((l) {
-        emit(HomeFailed());
+        if (l is CancelTokenFailure || l is ServerFailure) {
+          emit(HomeFailed());
+        } else {
+          emit(HomeFailure(l.toString()));
+        }
       }, (r) async {
         emit(HomeUserSuccess(r));
       });
@@ -54,7 +59,11 @@ class HomeCubit extends Cubit<HomeState> {
       emit(const HomeUsersSuccess([], isLoading: true));
       final result = await usersUseCase.call(NoParams());
       result.fold((l) {
-        emit(HomeFailed());
+        if (l is CancelTokenFailure || l is ServerFailure) {
+          emit(HomeFailed());
+        } else {
+          emit(HomeFailure(l.toString()));
+        }
       }, (r) async {
         allUsers = r;
         emit(HomeUsersSuccess(r));
@@ -165,10 +174,14 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  updateUser(int id, UserModel model) {
-    var index = allUsers.indexWhere((element) => element.id == id);
+  updateUser(int id, UserModel model, {bool isAdmin = false}) {
+    if (isAdmin) {
+      var index = allUsers.indexWhere((element) => element.id == id);
 
-    allUsers[index] = model;
-    emit(HomeUsersSuccess(allUsers));
+      allUsers[index] = model;
+      emit(HomeUsersSuccess(allUsers));
+    } else {
+      emit(HomeUserSuccess(model));
+    }
   }
 }

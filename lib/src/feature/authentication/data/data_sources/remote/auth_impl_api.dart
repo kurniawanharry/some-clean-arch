@@ -75,7 +75,7 @@ class AuthImplApi extends AbstractAuthApi {
   }
 
   @override
-  Future<bool> edit(EditModel params) async {
+  Future<UserResponseModel> edit(EditModel params) async {
     try {
       final result = await dio.post(
         Env.urlApiUser,
@@ -85,7 +85,7 @@ class AuthImplApi extends AbstractAuthApi {
         throw ServerException("Unknown Error", result.statusCode);
       }
 
-      return true;
+      return UserResponseModel.fromJson(result.data);
     } on DioException catch (e) {
       throw ServerException(handleDioError(e), e.response?.statusCode);
     } on ServerException {

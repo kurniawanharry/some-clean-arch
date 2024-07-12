@@ -583,8 +583,6 @@ class _RegisterPageState extends State<RegisterPage> {
                                   context.read<AuthCubit>().edit(request);
                                 }
                               }
-
-                              // context.pushNamed('register');
                             },
                             child: state is AuthLoading
                                 ? const SizedBox(

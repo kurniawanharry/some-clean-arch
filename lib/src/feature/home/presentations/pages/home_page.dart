@@ -67,10 +67,10 @@ class _HomePageState extends State<HomePage> {
           BlocListener<HomeCubit, HomeState>(
             bloc: _cubit,
             listener: (context, state) {
-              if (state is HomeFailed) {
-                // context.read<HomeCubit>().refreshToken(isAdmin);
-                getIt<AuthSharedPrefs>().removeToken().then((value) => context.go('/'));
-              }
+              // if (state is HomeFailed) {
+              // context.read<HomeCubit>().refreshToken(isAdmin);
+              // getIt<AuthSharedPrefs>().removeToken().then((value) => context.go('/'));
+              // }
             },
             child: BlocBuilder<HomeCubit, HomeState>(
               bloc: _cubit,
@@ -381,6 +381,7 @@ class _HomePageState extends State<HomePage> {
                 subtitle: Text('${user.nik}'),
                 tileColor: AppColors.white,
                 trailing: PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_vert_outlined),
                   onSelected: (String result) async {
                     if (result == 'Verifikasi') {
                       context.read<HomeCubit>().toggleVerification(
@@ -399,7 +400,7 @@ class _HomePageState extends State<HomePage> {
 
                       if (result != null) {
                         setState(() {
-                          context.read<HomeCubit>().updateUser(user.id!, result);
+                          context.read<HomeCubit>().updateUser(user.id!, result, isAdmin: isAdmin);
                         });
                       }
                     }
@@ -575,9 +576,17 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: () => context.push(
-                      '/register/details/${Uri.decodeComponent(json.encode(user))}',
-                    ),
+                    onPressed: () async {
+                      var result = await context.push(
+                        '/register/details/${Uri.decodeComponent(json.encode(user))}&${isAdmin ? '100' : '200'}',
+                      ) as UserModel?;
+
+                      if (result != null) {
+                        setState(() {
+                          context.read<HomeCubit>().updateUser(user.id!, result, isAdmin: isAdmin);
+                        });
+                      }
+                    },
                     child: state is AuthLoading
                         ? const CircularProgressIndicator()
                         : const Text('Edit'),

@@ -75,7 +75,7 @@ class AuthCubit extends Cubit<AuthState> {
       result.fold((l) {
         emit(AuthFailure(l.errorMessage));
       }, (r) async {
-        emit(AuthEditSucceed());
+        emit(AuthEditByIdSucceed(r));
       });
     } catch (error) {
       emit(AuthFailure(error.toString()));
