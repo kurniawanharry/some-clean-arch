@@ -26,8 +26,9 @@ class HomeUserSuccess extends HomeState {
 class HomeUsersSuccess extends HomeState {
   final List<UserModel> users;
   final bool isLoading;
+  final bool? isFailed;
 
-  const HomeUsersSuccess(this.users, {this.isLoading = false});
+  const HomeUsersSuccess(this.users, {this.isLoading = false, this.isFailed});
 
   @override
   List<Object> get props => users;

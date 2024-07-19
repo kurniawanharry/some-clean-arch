@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/feature/home/presentations/pages/about_page.dart';
 import 'package:some_app/src/feature/home/presentations/pages/home_page.dart';
@@ -55,7 +54,7 @@ class _HomeState extends State<Home> {
                 items: const [
                   BottomNavigationBarItem(
                     icon: Icon(Icons.home_outlined),
-                    label: 'Home',
+                    label: 'Dashboard',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.list_outlined),

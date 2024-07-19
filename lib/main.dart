@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:some_app/src/core/helper/helper.dart';
@@ -112,9 +111,9 @@ class _AppState extends State<App> with WidgetsBindingObserver {
                 // darkTheme: Themes.defaultThemes(context, isDark: true),
                 themeMode: value.darkTheme,
                 localizationsDelegates: const [
-                  GlobalMaterialLocalizations.delegate,
-                  GlobalWidgetsLocalizations.delegate,
-                  GlobalCupertinoLocalizations.delegate,
+                  // GlobalMaterialLocalizations.delegate,
+                  // GlobalWidgetsLocalizations.delegate,
+                  // GlobalCupertinoLocalizations.delegate,
                 ],
               ),
             ),

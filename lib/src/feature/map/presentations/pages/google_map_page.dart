@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
@@ -29,6 +29,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
   @override
   void initState() {
     super.initState();
+    _loadGeoJson();
     _checkPermissions();
   }
 
@@ -41,6 +42,43 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
     }
     _debounce?.cancel();
     super.dispose();
+  }
+
+  Set<Polygon> _polygons = {};
+
+  void _loadGeoJson() async {
+    String data = await DefaultAssetBundle.of(context).loadString('assets/balikpapan.json');
+    Map<String, dynamic> geoJson = jsonDecode(data);
+
+    Set<Polygon> polygons = {};
+    for (var coordinates in geoJson['coordinates']) {
+      for (var polygon in coordinates) {
+        List<LatLng> polygonCoords = [];
+        for (var coord in polygon) {
+          polygonCoords.add(
+            LatLng(
+              double.parse(coord[1].toString()),
+              double.parse(
+                coord[0].toString(),
+              ),
+            ),
+          );
+        }
+        polygons.add(
+          Polygon(
+            polygonId: PolygonId(polygonCoords.toString()),
+            points: polygonCoords,
+            strokeColor: Colors.blue,
+            strokeWidth: 3,
+            fillColor: Colors.blue.withOpacity(0.2),
+          ),
+        );
+      }
+    }
+
+    setState(() {
+      _polygons = polygons;
+    });
   }
 
   @override
@@ -57,11 +95,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
                 zoom: 1.0,
               ),
               onCameraMove: _onCameraMove,
-              myLocationEnabled: false,
-              myLocationButtonEnabled: false,
-              zoomControlsEnabled: false,
-              mapToolbarEnabled: false,
-              trafficEnabled: false,
+              polygons: _polygons,
             ),
           ),
           Align(

@@ -59,14 +59,10 @@ class HomeCubit extends Cubit<HomeState> {
       emit(const HomeUsersSuccess([], isLoading: true));
       final result = await usersUseCase.call(NoParams());
       result.fold((l) {
-        if (l is CancelTokenFailure || l is ServerFailure) {
-          emit(HomeFailed());
-        } else {
-          emit(HomeFailure(l.toString()));
-        }
+        emit(const HomeUsersSuccess([]));
       }, (r) async {
         allUsers = r;
-        emit(HomeUsersSuccess(r));
+        emit(HomeUsersSuccess(r, isFailed: false));
       });
     } catch (error) {
       emit(HomeFailure(error.toString()));

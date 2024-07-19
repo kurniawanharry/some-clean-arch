@@ -348,6 +348,20 @@ class UserPageState extends State<UserPage> {
   }
 
   Widget _users(HomeUsersSuccess state, bool isVerified) {
+    if (state.isFailed ?? false) {
+      return Center(
+        child: Column(
+          children: [
+            const Text('Data Tidak Ditemukan'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => context.read<HomeCubit>().fetchUsers(),
+              child: const Text('Refresh'),
+            ),
+          ],
+        ),
+      );
+    }
     return RefreshIndicator(
       onRefresh: () => context.read<HomeCubit>().fetchUsers(),
       child: ListView.separated(
