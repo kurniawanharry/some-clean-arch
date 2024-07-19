@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/core/styles/app_dimens.dart';
@@ -171,7 +173,7 @@ class UserPageState extends State<UserPage> {
                     icon: const Icon(Icons.add),
                     label: state is AuthLoading
                         ? const CircularProgressIndicator()
-                        : const Text('Users'),
+                        : const Text('User'),
                   ),
                   if (isAdmin) ...[
                     const SizedBox(width: 10),
@@ -235,7 +237,9 @@ class UserPageState extends State<UserPage> {
               ),
               if (state is HomeEmployeesSuccess)
                 if (state.isLoading)
-                  const Center(child: CircularProgressIndicator())
+                  const Center(
+                    child: CircularProgressIndicator(),
+                  )
                 else if (state.isFailed ?? true)
                   Center(
                     child: Column(
@@ -360,10 +364,10 @@ class UserPageState extends State<UserPage> {
                     indicatorSize: TabBarIndicatorSize.tab,
                     tabs: [
                       Tab(
-                        text: 'Data Terverif',
+                        text: 'Diverifikasi',
                       ),
                       Tab(
-                        text: 'Data Belum Terverif',
+                        text: 'Belum Diverifikasi',
                       )
                     ],
                   ),
@@ -495,10 +499,6 @@ class UserPageState extends State<UserPage> {
                     ],
                   ),
                   if (state is HomeUsersSuccess) ...[
-                    if (state.isLoading)
-                      const Center(
-                        child: CircularProgressIndicator(),
-                      ),
                     Expanded(
                       child: TabBarView(
                         children: [
@@ -516,7 +516,11 @@ class UserPageState extends State<UserPage> {
   }
 
   Widget _users(HomeUsersSuccess state, bool isVerified) {
-    if (state.isFailed ?? false) {
+    if (state.isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    } else if (state.isFailed ?? false) {
       return Center(
         child: Column(
           children: [
@@ -597,7 +601,22 @@ class UserPageState extends State<UserPage> {
                   ],
                 ),
                 onTap: () async {
-                  return showModalBottomSheet(
+                  final Uint8List markerIcon = await createCustomMarkerBitmap(
+                    'NIK: ${user.nik}\nNama: ${user.name}\nDisabilitas: ${user.disability}\n',
+                    // "assets/images/clover_tree.png",
+                    "https://fastcdn.hoyoverse.com/content-v2/hk4e/113484/1a0e331a984e482f84433eac47cd5e3b_3721947678899810120.jpg",
+                    user.isVerified ?? false,
+                  );
+                  var marker = Marker(
+                    markerId: MarkerId('${user.nik}'),
+                    position: LatLng(
+                        double.parse(user.latitude ?? '0'), double.parse(user.longitude ?? '0')),
+                    infoWindow: InfoWindow(title: '${user.address}'),
+                    draggable: false,
+                    // ignore: deprecated_member_use
+                    icon: BitmapDescriptor.fromBytes(markerIcon),
+                  );
+                  return await showModalBottomSheet(
                     // ignore: use_build_context_synchronously
                     context: context,
                     backgroundColor: AppColors.main,
@@ -614,6 +633,7 @@ class UserPageState extends State<UserPage> {
                                 child: MapScreen(
                                   latitude: double.parse(user.latitude ?? '0.0'),
                                   longitude: double.parse(user.longitude ?? '0.0'),
+                                  markers: marker,
                                 ),
                               ),
                             ),
@@ -637,7 +657,7 @@ class UserPageState extends State<UserPage> {
                                     ListTile(
                                       title: const Text('Tanggal Lahir'),
                                       subtitle: Text(
-                                        DateFormat.yMMMMEEEEd('ID').format(
+                                        DateFormat.yMMMMEEEEd('id_ID').format(
                                           DateFormat('yyyy-MM-dd').parse(user.birthDate!),
                                         ),
                                       ),
@@ -658,8 +678,8 @@ class UserPageState extends State<UserPage> {
                                     ListTile(
                                       title: const Text('Status Verifikasi'),
                                       subtitle: Text(user.isVerified ?? false
-                                          ? 'Sudah Terverifikasi'
-                                          : 'Belum Terverifikasi'),
+                                          ? 'Sudah Diverifikasi'
+                                          : 'Belum Diverifikasi'),
                                     ),
                                   ],
                                 ),

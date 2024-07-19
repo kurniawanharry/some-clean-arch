@@ -25,6 +25,7 @@ import 'package:some_app/src/feature/home/domain/usecase/user_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/users_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/verify_usecase.dart';
 import 'package:some_app/src/feature/home/presentations/cubit/home_cubit.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 ///NIK
 ///NAMA
@@ -38,6 +39,7 @@ import 'package:some_app/src/feature/home/presentations/cubit/home_cubit.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('id_ID', null);
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(

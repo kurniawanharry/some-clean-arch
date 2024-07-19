@@ -115,7 +115,7 @@ class _HomePageState extends State<HomePage> {
           listener: (context, state) async {
             if (state is HomeUsersSuccess) {
               for (var data in state.users) {
-                final Uint8List markerIcon = await _createCustomMarkerBitmap(
+                final Uint8List markerIcon = await createCustomMarkerBitmap(
                   'NIK: ${data.nik}\nNama: ${data.name}\nDisabilitas: ${data.disability}\n',
                   // "assets/images/clover_tree.png",
                   "https://fastcdn.hoyoverse.com/content-v2/hk4e/113484/1a0e331a984e482f84433eac47cd5e3b_3721947678899810120.jpg",
@@ -156,26 +156,73 @@ class _HomePageState extends State<HomePage> {
                     Positioned(
                       top: 20,
                       right: 10,
-                      child: Row(
-                        children: [
-                          IconButton.filled(
-                            onPressed: _zoomIn,
-                            style: IconButton.styleFrom(
-                              backgroundColor: AppColors.white,
+                      left: 10,
+                      child: SafeArea(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 15),
+                              decoration: BoxDecoration(
+                                color: AppColors.main,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Legend',
+                                    style: Theme.of(context).textTheme.bodyLarge,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        height: 20,
+                                        width: 20,
+                                        decoration: BoxDecoration(
+                                          color: Colors.pink.shade200,
+                                          border: Border.all(
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        'Belum Diverifikasi',
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                              fontSize: 14,
+                                            ),
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        height: 20,
+                                        width: 20,
+                                        decoration: BoxDecoration(
+                                          color: AppColors.white,
+                                          border: Border.all(
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        'Sudah Diverifikasi',
+                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                              fontSize: 14,
+                                            ),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              ),
                             ),
-                            color: AppColors.secondary,
-                            icon: const Icon(Icons.add),
-                          ),
-                          const SizedBox(height: 10),
-                          IconButton.filled(
-                            onPressed: _zoomOut,
-                            style: IconButton.styleFrom(
-                              backgroundColor: AppColors.white,
-                            ),
-                            color: AppColors.secondary,
-                            icon: const Icon(Icons.remove),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -236,7 +283,7 @@ String disabilityType(String name) {
   }
 }
 
-Future<Uint8List> _createCustomMarkerBitmap(String text, String imagePath, bool isVerif) async {
+Future<Uint8List> createCustomMarkerBitmap(String text, String imagePath, bool isVerif) async {
   final ui.PictureRecorder pictureRecorder = ui.PictureRecorder();
   final Canvas canvas = Canvas(pictureRecorder);
   final Paint paint = Paint()..color = isVerif ? Colors.white : Colors.pink.shade200;

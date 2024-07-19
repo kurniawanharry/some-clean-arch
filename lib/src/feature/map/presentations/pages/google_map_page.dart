@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
@@ -95,6 +96,7 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
                 zoom: 1.0,
               ),
               onCameraMove: _onCameraMove,
+              zoomControlsEnabled: false,
               polygons: _polygons,
             ),
           ),
@@ -211,8 +213,8 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
   }
 
   Future<void> _getCurrentLocation() async {
-    // Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    // // _currentPosition = LatLng(position.latitude, position.longitude);
+    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    _currentPosition = LatLng(position.latitude, position.longitude);
     _getAddressFromLatLng(_currentPosition);
     _controller.future
         .then((value) => value.animateCamera(CameraUpdate.newLatLngZoom(_currentPosition, 18.0)));

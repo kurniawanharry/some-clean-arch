@@ -37,13 +37,13 @@ class HomeCubit extends Cubit<HomeState> {
       emit(const HomeUsersSuccess([], isLoading: true));
       final result = await usersUseCase.call(isAdmin);
       result.fold((l) {
-        emit(const HomeUsersSuccess([]));
+        emit(const HomeUsersSuccess([], isFailed: true, isLoading: false));
       }, (r) async {
         allUsers = r;
         emit(HomeUsersSuccess(r, isFailed: false));
       });
     } catch (error) {
-      emit(HomeFailure(error.toString()));
+      emit(const HomeUsersSuccess([], isFailed: true, isLoading: false));
     }
   }
 
