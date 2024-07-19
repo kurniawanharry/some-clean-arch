@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:some_app/src/core/util/usescases/usecases.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
-import 'package:some_app/src/feature/authentication/data/models/employee_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/delete_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
