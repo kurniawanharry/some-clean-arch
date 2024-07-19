@@ -3,6 +3,7 @@ import 'package:some_app/src/core/network/error/exceptions.dart';
 import 'package:some_app/src/core/network/error/failure.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/remote/auth_impl_api.dart';
 import 'package:some_app/src/feature/authentication/data/models/edit_model.dart';
+import 'package:some_app/src/feature/authentication/data/models/employee_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
@@ -42,9 +43,9 @@ class AuthRepositoryImpl extends AbstractAuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserResponseModel>> signUp(SignUpModel params) async {
+  Future<Either<Failure, UserResponseModel>> signUp(bool isAdmin, SignUpModel params) async {
     try {
-      final result = await articlesApi.signUp(params);
+      final result = await articlesApi.signUp(isAdmin, params);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));
@@ -93,6 +94,30 @@ class AuthRepositoryImpl extends AbstractAuthRepository {
   Future<Either<Failure, UserModel>> delete(int params) async {
     try {
       final result = await articlesApi.delete(params);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    } on CancelTokenException catch (e) {
+      return Left(CancelTokenFailure(e.message, e.statusCode));
+    }
+  }
+
+  @override
+  Future<Either<Failure, EmployeeModel>> editEmployee(int id, EmployeeModel params) async {
+    try {
+      final result = await articlesApi.editEmployee(id, params);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    } on CancelTokenException catch (e) {
+      return Left(CancelTokenFailure(e.message, e.statusCode));
+    }
+  }
+
+  @override
+  Future<Either<Failure, EmployeeModel>> signEmployee(EmployeeModel params) async {
+    try {
+      final result = await articlesApi.signEmployee(params);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));

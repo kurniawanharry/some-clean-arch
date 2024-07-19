@@ -14,15 +14,6 @@ class HomeLoading extends HomeState {}
 
 class HomeAdminLoading extends HomeState {}
 
-class HomeUserSuccess extends HomeState {
-  final UserModel user;
-
-  const HomeUserSuccess(this.user);
-
-  @override
-  List<Object> get props => [user];
-}
-
 class HomeUsersSuccess extends HomeState {
   final List<UserModel> users;
   final bool isLoading;

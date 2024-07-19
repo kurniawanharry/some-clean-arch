@@ -1,21 +1,19 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
-import 'package:some_app/src/core/network/error/failure.dart';
 import 'package:some_app/src/core/util/usescases/usecases.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
+import 'package:some_app/src/feature/authentication/data/models/employee_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/delete_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/user_id_usecase.dart';
-import 'package:some_app/src/feature/home/domain/usecase/user_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/users_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/verify_usecase.dart';
 
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
-  final UserUseCase userUseCase;
   final UsersUseCase usersUseCase;
   final UserIdUseCase userIdUseCase;
   final VerifyUseCase verifyUseCase;
@@ -28,7 +26,6 @@ class HomeCubit extends Cubit<HomeState> {
 
   HomeCubit(
     this.userIdUseCase,
-    this.userUseCase,
     this.usersUseCase,
     this.verifyUseCase,
     this.refreshUseCase,
@@ -36,28 +33,10 @@ class HomeCubit extends Cubit<HomeState> {
     this.authSharedPrefs,
   ) : super(HomeInitial());
 
-  Future fetchUser() async {
-    try {
-      emit(HomeLoading());
-      final result = await userUseCase.call(NoParams());
-      result.fold((l) {
-        if (l is CancelTokenFailure || l is ServerFailure) {
-          emit(HomeFailed());
-        } else {
-          emit(HomeFailure(l.toString()));
-        }
-      }, (r) async {
-        emit(HomeUserSuccess(r));
-      });
-    } catch (error) {
-      emit(HomeFailure(error.toString()));
-    }
-  }
-
-  Future fetchUsers() async {
+  Future fetchUsers(bool isAdmin) async {
     try {
       emit(const HomeUsersSuccess([], isLoading: true));
-      final result = await usersUseCase.call(NoParams());
+      final result = await usersUseCase.call(isAdmin);
       result.fold((l) {
         emit(const HomeUsersSuccess([]));
       }, (r) async {
@@ -159,11 +138,7 @@ class HomeCubit extends Cubit<HomeState> {
         await authSharedPrefs.saveToken(r.accessToken!);
         await authSharedPrefs.saveType(r.userType ?? 200);
 
-        if (isAdmin) {
-          fetchUsers();
-        } else {
-          fetchUser();
-        }
+        fetchUsers(isAdmin);
       });
     } catch (error) {
       emit(HomeFailure(error.toString()));
@@ -176,8 +151,9 @@ class HomeCubit extends Cubit<HomeState> {
 
       allUsers[index] = model;
       emit(HomeUsersSuccess(allUsers));
-    } else {
-      emit(HomeUserSuccess(model));
     }
+    //  else {
+    //   emit(HomeUserSuccess(model));
+    // }
   }
 }

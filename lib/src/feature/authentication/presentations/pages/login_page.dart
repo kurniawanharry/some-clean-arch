@@ -7,6 +7,8 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/core/styles/app_dimens.dart';
 import 'package:some_app/src/core/util/enum/enum.dart';
+import 'package:some_app/src/core/util/injections.dart';
+import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/presentations/cubit/auth_cubit.dart';
 
@@ -163,10 +165,9 @@ class _LoginPageState extends State<LoginPage> {
                       BlocConsumer<AuthCubit, AuthState>(
                         listener: (context, state) {
                           if (state is AuthSuccess) {
-                            // Navigate to the next screen
-                            context.goNamed('home', pathParameters: {
-                              'type': '${userType == UserType.admin ? 100 : 200}',
-                            });
+                            getIt<AuthSharedPrefs>()
+                                .saveType(state.user.userType ?? 100)
+                                .then((value) => context.goNamed('home'));
                           } else if (state is AuthFailure) {
                             // Show error message
                             ScaffoldMessenger.of(context).showSnackBar(

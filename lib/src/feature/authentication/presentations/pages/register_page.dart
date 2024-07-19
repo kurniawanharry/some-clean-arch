@@ -32,10 +32,13 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   int gender = 0;
+  int type = 100;
   LatLng? latLng;
   DateTime selectedDate = DateTime.now();
 
   String selectedValue = 'Disabilitas Netra';
+
+  bool isAdmin = false;
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
@@ -76,6 +79,10 @@ class _RegisterPageState extends State<RegisterPage> {
       dateController.text = DateFormat('dd-MM-yyyy').format(date);
 
       selectedDate = date;
+    }
+    type = widget.type ?? 100;
+    if (type == 100) {
+      isAdmin = true;
     }
     super.initState();
   }
@@ -506,16 +513,7 @@ class _RegisterPageState extends State<RegisterPage> {
                       BlocConsumer<AuthCubit, AuthState>(
                         listener: (context, state) {
                           if (state is AuthRegistered) {
-                            context.goNamed('home', pathParameters: {
-                              'type': '200',
-                            });
-                            // final nik = nikController.text;
-                            // final password = passwordController.value.text;
-                            // var request = SignInModel(
-                            //   nik: nik,
-                            //   password: password,
-                            // );
-                            // context.read<AuthCubit>().signIn(request);
+                            context.goNamed('home');
                           }
 
                           if (state is AuthSuccess) {
@@ -613,7 +611,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   // password: password,
                                 );
                                 // ignore: use_build_context_synchronously
-                                context.read<AuthCubit>().signUp(request);
+                                context.read<AuthCubit>().signUp(isAdmin, request);
                               } else {
                                 var request = EditModel(
                                   nik: nik,

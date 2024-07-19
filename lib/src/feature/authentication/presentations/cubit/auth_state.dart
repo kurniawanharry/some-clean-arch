@@ -51,3 +51,14 @@ class AuthEditByIdSucceed extends AuthState {
   @override
   List<Object> get props => [model];
 }
+
+class AuthEmployeCreated extends AuthState {}
+
+class AuthEmployeEdited extends AuthState {
+  final EmployeeModel model;
+
+  const AuthEmployeEdited(this.model);
+
+  @override
+  List<Object> get props => [model];
+}

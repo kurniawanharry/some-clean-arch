@@ -6,6 +6,7 @@ import 'package:some_app/src/core/network/error/exceptions.dart';
 import 'package:some_app/src/core/util/constants/network_constants.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/remote/abstract_auth_api.dart';
 import 'package:some_app/src/feature/authentication/data/models/edit_model.dart';
+import 'package:some_app/src/feature/authentication/data/models/employee_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
@@ -38,10 +39,11 @@ class AuthImplApi extends AbstractAuthApi {
   }
 
   @override
-  Future<UserResponseModel> signUp(SignUpModel params) async {
+  Future<UserResponseModel> signUp(bool isAdmin, SignUpModel params) async {
     try {
-      final result =
-          await dio.post('${Env.urlApiAdmin}/disabled/create', data: jsonEncode(params.toJson()));
+      final result = await dio.post(
+          '${isAdmin ? Env.urlApiAdmin : Env.urlApiEmployee}/disabled/create',
+          data: jsonEncode(params.toJson()));
       if (result.data == null) {
         throw ServerException("Unknown Error", result.statusCode);
       }
@@ -145,6 +147,44 @@ class AuthImplApi extends AbstractAuthApi {
       }
 
       return UserModel.fromJson(result.data);
+    } on DioException catch (e) {
+      throw ServerException(handleDioError(e), e.response?.statusCode);
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(e.toString(), null);
+    }
+  }
+
+  @override
+  Future<EmployeeModel> editEmployee(int id, EmployeeModel params) async {
+    try {
+      final result = await dio.post('${Env.urlApiAdmin}/employees/update/$id',
+          data: jsonEncode(params.toJson()));
+      if (result.data == null) {
+        throw ServerException("Unknown Error", result.statusCode);
+      }
+
+      return EmployeeModel.fromJson(result.data);
+    } on DioException catch (e) {
+      throw ServerException(handleDioError(e), e.response?.statusCode);
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(e.toString(), null);
+    }
+  }
+
+  @override
+  Future<EmployeeModel> signEmployee(EmployeeModel params) async {
+    try {
+      final result =
+          await dio.post('${Env.urlApiAdmin}/employees/create', data: jsonEncode(params.toJson()));
+      if (result.data == null) {
+        throw ServerException("Unknown Error", result.statusCode);
+      }
+
+      return EmployeeModel.fromJson(result.data);
     } on DioException catch (e) {
       throw ServerException(handleDioError(e), e.response?.statusCode);
     } on ServerException {

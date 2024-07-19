@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:some_app/src/core/network/dio_network.dart';
 import 'package:some_app/src/core/util/log/app_logger.dart';
 import 'package:some_app/src/feature/authentication/auth_injections.dart';
+import 'package:some_app/src/feature/employee/employee_injections.dart';
 import 'package:some_app/src/feature/home/home_injections.dart';
 import 'package:some_app/src/shared/app_injections.dart';
 
@@ -14,6 +15,7 @@ initInjections() async {
   await initDioInjections();
   await initAuthInjections();
   await initHomeInjections();
+  await initEmployeeInjections();
 }
 
 initSharedPrefsInjections() async {

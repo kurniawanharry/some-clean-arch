@@ -25,13 +25,11 @@ class _IntroPageState extends State<IntroPage> {
           final payload = parseJwt(token);
           final expiration = parseExpiration(payload);
 
-          final type = getIt<AuthSharedPrefs>().getType() ?? 100;
-
           var isExpired = isTokenExpired(expiration);
           if (isExpired) {
             context.pushReplacementNamed('login');
           } else {
-            context.pushReplacementNamed('home', pathParameters: {'type': '$type'});
+            context.pushReplacementNamed('home');
           }
         }
       }),

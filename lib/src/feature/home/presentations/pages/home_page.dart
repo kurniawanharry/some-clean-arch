@@ -14,12 +14,7 @@ import 'package:some_app/src/feature/home/presentations/pages/google_map_home_pa
 import 'dart:ui' as ui;
 
 class HomePage extends StatefulWidget {
-  const HomePage({
-    super.key,
-    this.type = 200,
-  });
-
-  final int? type;
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -39,7 +34,7 @@ class _HomePageState extends State<HomePage> {
   Set<Polygon> _polygons = {};
   double _currentZoom = 12;
 
-  void _loadGeoJson() async {
+  _loadGeoJson() async {
     String data = await DefaultAssetBundle.of(context).loadString('assets/balikpapan.json');
     Map<String, dynamic> geoJson = jsonDecode(data);
 
@@ -77,7 +72,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     _cubit = BlocProvider.of<HomeCubit>(context);
-    _cubit.fetchUsers();
+    isAdmin = getIt<AuthSharedPrefs>().isAdmin();
+    _cubit.fetchUsers(isAdmin);
     _loadGeoJson();
     super.initState();
   }
@@ -131,6 +127,7 @@ class _HomePageState extends State<HomePage> {
                       double.parse(data.latitude ?? '0'), double.parse(data.longitude ?? '0')),
                   infoWindow: InfoWindow(title: '${data.address}'),
                   draggable: false,
+                  // ignore: deprecated_member_use
                   icon: BitmapDescriptor.fromBytes(markerIcon),
                 );
                 setState(() => _markers.add(marker));

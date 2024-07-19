@@ -25,8 +25,12 @@ class AuthSharedPrefs {
     return preferences.getString(_tokenKey);
   }
 
-  int? getType() {
-    return preferences.getInt(_typeKey);
+  bool isAdmin() {
+    var result = preferences.getInt(_typeKey);
+    if (result == 100) {
+      return true;
+    }
+    return false;
   }
 
   Future<void> removeToken() async {

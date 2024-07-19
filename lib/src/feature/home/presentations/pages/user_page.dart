@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -9,9 +10,11 @@ import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/core/styles/app_dimens.dart';
 import 'package:some_app/src/core/util/injections.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
+import 'package:some_app/src/feature/authentication/data/models/employee_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/presentations/cubit/auth_cubit.dart';
 import 'package:some_app/src/feature/authentication/presentations/pages/register_page.dart';
+import 'package:some_app/src/feature/employee/presentations/cubit/employee_cubit.dart';
 import 'package:some_app/src/feature/home/presentations/cubit/home_cubit.dart';
 import 'package:some_app/src/feature/home/presentations/pages/home_page.dart';
 import 'package:some_app/src/shared/presentations/pages/map_screen.dart';
@@ -25,6 +28,7 @@ class UserPage extends StatefulWidget {
 
 class UserPageState extends State<UserPage> {
   late final HomeCubit _cubit;
+  late final EmployeeCubit _employeeCubit;
 
   String selectedGender = 'Semua';
   String selectedValue = 'Semua';
@@ -34,7 +38,16 @@ class UserPageState extends State<UserPage> {
   @override
   void initState() {
     _cubit = BlocProvider.of<HomeCubit>(context);
-    _cubit.fetchUsers();
+    _employeeCubit = BlocProvider.of<EmployeeCubit>(context);
+    isAdmin = getIt<AuthSharedPrefs>().isAdmin();
+    _cubit.fetchUsers(isAdmin);
+
+    if (isAdmin) {
+      _employeeCubit.fetchEmpolyee();
+    } else {
+      _employeeCubit.fetchUser(isAdmin);
+    }
+
     super.initState();
   }
 
@@ -54,280 +67,437 @@ class UserPageState extends State<UserPage> {
             ),
           ),
         ),
-        BlocListener<HomeCubit, HomeState>(
-          bloc: _cubit,
-          listener: (context, state) {
-            // if (state is HomeFailed) {
-            // context.read<HomeCubit>().refreshToken(isAdmin);
-            // getIt<AuthSharedPrefs>().removeToken().then((value) => context.go('/'));
-            // }
-          },
-          child: BlocBuilder<HomeCubit, HomeState>(
-            bloc: _cubit,
-            builder: (context, state) {
-              if (state is HomeLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.white,
-                  ),
-                );
-              } else if (state is HomeUsersSuccess) {
-                return _admin(context, state);
-              } else {
-                return Center(
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('Data Tidak Ditemukan'),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: () => context.read<HomeCubit>().fetchUsers(),
-                            child: const Text('Refresh'),
-                          ),
-                          const SizedBox(height: 20),
-                          ElevatedButton(
-                            onPressed: () => getIt<AuthSharedPrefs>()
-                                .removeToken()
-                                .then((value) => context.go('/')),
-                            child: const Text('Logout'),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }
-            },
-          ),
-        ),
+        if (isAdmin)
+          _body(context)
+        else
+          SafeArea(
+              child: Column(
+            children: [
+              _topBar(context),
+              const SizedBox(height: 10),
+              Flexible(child: _user(context)),
+            ],
+          ))
       ],
     );
   }
 
-  SafeArea _admin(BuildContext context, HomeUsersSuccess state) {
+  Widget _body(BuildContext context) {
     return SafeArea(
       child: DefaultTabController(
         length: 2,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            _topBar(context),
+            const TabBar(
+              indicatorSize: TabBarIndicatorSize.tab,
+              labelColor: AppColors.white,
+              indicatorColor: AppColors.white,
+              dividerColor: AppColors.white,
+              unselectedLabelColor: AppColors.white,
+              // indicator: ArrowTabBarIndicator(color: AppColors.white),
+              tabs: [
+                Tab(
+                  text: 'User',
+                ),
+                Tab(
+                  text: 'Karyawan',
+                )
+              ],
+            ),
+            Expanded(
+              child: TabBarView(
                 children: [
-                  Text(
-                    'Admin',
+                  _user(context),
+                  _employee(context),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _topBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 15, right: 15, top: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          if (isAdmin)
+            Text(
+              'Admin',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppColors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+            )
+          else
+            BlocConsumer<EmployeeCubit, EmployeeState>(
+              listener: (context, state) {},
+              builder: (context, state) {
+                if (state is HomeEmployeeSuccess) {
+                  return Text(
+                    state.user.name ?? '',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppColors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
-                  ),
-                  BlocConsumer<AuthCubit, AuthState>(
-                    listener: (context, state) {
-                      if (state is AuthLoggedOut) {
-                        context.go('/');
-                      } else if (state is AuthFailure) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(state.message)),
-                        );
-                      }
-                    },
-                    builder: (context, state) {
-                      return TextButton.icon(
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.secondary,
-                          backgroundColor: AppColors.main,
-                        ),
-                        onPressed: () => context.pushNamed('register'),
-                        icon: const Icon(Icons.add),
-                        label: state is AuthLoading
-                            ? const CircularProgressIndicator()
-                            : const Text('Users'),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                  );
+                }
+                return const SizedBox();
+              },
             ),
-            Flexible(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: AppColors.white,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                      child: TextField(
-                        keyboardType: TextInputType.name,
-                        textInputAction: TextInputAction.search,
-                        decoration: const InputDecoration(
-                          isDense: true,
-                          hintText: 'Cari User',
-                          contentPadding: EdgeInsets.symmetric(
-                            vertical: 10,
-                            horizontal: 15,
-                          ),
-                          prefixIcon: Icon(
-                            Icons.search,
-                            size: 25,
-                          ),
-                        ),
-                        onChanged: (value) => _cubit.searchUsers(value),
-                      ),
+          BlocConsumer<AuthCubit, AuthState>(
+            listener: (context, state) {
+              if (state is AuthFailure) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              }
+            },
+            builder: (context, state) {
+              return Row(
+                children: [
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.secondary,
+                      backgroundColor: AppColors.main,
                     ),
-                    const TabBar(
-                      indicatorSize: TabBarIndicatorSize.tab,
-                      tabs: [
-                        Tab(
-                          text: 'Data Terverif',
+                    onPressed: () => context.push('/register/create/${isAdmin ? '100' : '200'}'),
+                    icon: const Icon(Icons.add),
+                    label: state is AuthLoading
+                        ? const CircularProgressIndicator()
+                        : const Text('Users'),
+                  ),
+                  if (isAdmin) ...[
+                    const SizedBox(width: 10),
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.secondary,
+                        backgroundColor: AppColors.main,
+                      ),
+                      onPressed: () => context.pushNamed('employee'),
+                      icon: const Icon(Icons.add),
+                      label: state is AuthLoading
+                          ? const CircularProgressIndicator()
+                          : const Text('Karyawan'),
+                    ),
+                  ]
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _employee(BuildContext context) {
+    return BlocBuilder<EmployeeCubit, EmployeeState>(
+      bloc: _employeeCubit,
+      builder: (context, state) {
+        if (state is HomeLoading) {
+          return const Center(
+            child: CircularProgressIndicator(
+              color: AppColors.white,
+            ),
+          );
+        }
+        return Container(
+          decoration: const BoxDecoration(
+            color: AppColors.white,
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                child: TextField(
+                  keyboardType: TextInputType.name,
+                  textInputAction: TextInputAction.search,
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    hintText: 'Cari Karyawan',
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 15,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search,
+                      size: 25,
+                    ),
+                  ),
+                  onChanged: (value) => _employeeCubit.searchUsers(value),
+                ),
+              ),
+              if (state is HomeEmployeesSuccess)
+                if (state.isLoading)
+                  const Center(child: CircularProgressIndicator())
+                else if (state.isFailed ?? true)
+                  Center(
+                    child: Column(
+                      children: [
+                        const Text('Data Karyawan Tidak Ditemukan'),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () => context.read<EmployeeCubit>().fetchEmpolyee(),
+                          child: const Text('Refresh'),
                         ),
-                        Tab(
-                          text: 'Data Belum Terverif',
-                        )
                       ],
                     ),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Container(
-                            width: double.maxFinite,
-                            margin: const EdgeInsets.only(left: 5, top: 10, bottom: 10, right: 10),
-                            padding: const EdgeInsets.only(left: 10, right: 10),
-                            decoration: BoxDecoration(
-                                color: AppColors.white,
-                                borderRadius: BorderRadius.circular(AppDimens.standarBorder),
-                                border: Border.all(
-                                  color: AppColors.lightGray,
-                                )),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton2<String>(
-                                value: selectedGender,
-                                isExpanded: true,
-                                isDense: true,
-                                iconStyleData: const IconStyleData(
-                                  icon: Icon(
-                                    Icons.keyboard_arrow_down,
-                                  ),
-                                ),
-                                dropdownStyleData: DropdownStyleData(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                buttonStyleData: const ButtonStyleData(
-                                  height: 40,
-                                  elevation: 0,
-                                ),
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      overflow: TextOverflow.fade,
+                  )
+                else
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () => context.read<EmployeeCubit>().fetchEmpolyee(),
+                      child: ListView.separated(
+                        separatorBuilder: (context, index) => const Divider(height: 0),
+                        itemCount: state.users.length,
+                        padding: EdgeInsets.zero,
+                        itemBuilder: (context, index) {
+                          var user = state.users[index];
+
+                          return BlocBuilder<EmployeeCubit, EmployeeState>(
+                              builder: (context, state) {
+                            return Material(
+                              child: ListTile(
+                                title: Text('${user.name}'),
+                                tileColor: AppColors.white,
+                                trailing: PopupMenuButton<String>(
+                                  icon: const Icon(Icons.more_vert_outlined),
+                                  onSelected: (String result) async {
+                                    if (result == 'Delete') {
+                                    } else {
+                                      var result = await context.push(
+                                        '/employee/details/${Uri.decodeComponent(json.encode(user))}&${isAdmin ? '100' : '200'}',
+                                      ) as EmployeeModel?;
+
+                                      if (result != null) {
+                                        setState(() {
+                                          context
+                                              .read<EmployeeCubit>()
+                                              .updateUser(user.id!, result, isAdmin: isAdmin);
+                                        });
+                                      }
+                                    }
+                                  },
+                                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                    const PopupMenuItem<String>(
+                                      value: 'Edit',
+                                      child: ListTile(
+                                        leading: Icon(Icons.edit_outlined),
+                                        title: Text('Edit'),
+                                      ),
                                     ),
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    selectedGender = newValue!;
-                                  });
-                                  context.read<HomeCubit>().filterUsers(
-                                        selectedGender.toLowerCase() == 'semua'
-                                            ? 'semua'
-                                            : selectedGender.toLowerCase() == 'laki-laki'
-                                                ? 'male'
-                                                : 'female',
-                                        disabilityName(selectedValue),
-                                      );
-                                },
-                                items: ['Semua', 'Laki-Laki', 'Perempuan']
-                                    .map<DropdownMenuItem<String>>((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value == 'Semua' ? 'Semua Gender' : value),
-                                  );
-                                }).toList(),
-                                menuItemStyleData: const MenuItemStyleData(
-                                  padding: EdgeInsets.zero,
+                                    const PopupMenuItem<String>(
+                                      value: 'Delete',
+                                      child: ListTile(
+                                        leading: Icon(Icons.delete_outline),
+                                        title: Text('Hapus'),
+                                      ),
+                                    ),
+                                  ],
                                 ),
+                                onTap: null,
                               ),
-                            ),
-                          ),
+                            );
+                          });
+                        },
+                      ),
+                    ),
+                  ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _user(BuildContext context) {
+    return BlocBuilder<HomeCubit, HomeState>(
+        bloc: _cubit,
+        builder: (context, state) {
+          if (state is HomeLoading) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: AppColors.white,
+              ),
+            );
+          }
+          return DefaultTabController(
+            length: 2,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: AppColors.white,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                    child: TextField(
+                      keyboardType: TextInputType.name,
+                      textInputAction: TextInputAction.search,
+                      decoration: const InputDecoration(
+                        isDense: true,
+                        hintText: 'Cari User',
+                        contentPadding: EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 15,
                         ),
-                        Flexible(
-                          child: Container(
-                            width: double.maxFinite,
-                            margin: const EdgeInsets.only(left: 5, top: 10, bottom: 10, right: 10),
-                            padding: const EdgeInsets.only(left: 10, right: 10),
-                            decoration: BoxDecoration(
+                        prefixIcon: Icon(
+                          Icons.search,
+                          size: 25,
+                        ),
+                      ),
+                      onChanged: (value) => _cubit.searchUsers(value),
+                    ),
+                  ),
+                  const TabBar(
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    tabs: [
+                      Tab(
+                        text: 'Data Terverif',
+                      ),
+                      Tab(
+                        text: 'Data Belum Terverif',
+                      )
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Container(
+                          width: double.maxFinite,
+                          margin: const EdgeInsets.only(left: 5, top: 10, bottom: 10, right: 10),
+                          padding: const EdgeInsets.only(left: 10, right: 10),
+                          decoration: BoxDecoration(
                               color: AppColors.white,
                               borderRadius: BorderRadius.circular(AppDimens.standarBorder),
                               border: Border.all(
                                 color: AppColors.lightGray,
+                              )),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton2<String>(
+                              value: selectedGender,
+                              isExpanded: true,
+                              isDense: true,
+                              iconStyleData: const IconStyleData(
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down,
+                                ),
                               ),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton2<String>(
-                                value: selectedValue,
-                                isExpanded: true,
-                                isDense: true,
-                                iconStyleData: const IconStyleData(
-                                  icon: Icon(
-                                    Icons.keyboard_arrow_down,
+                              dropdownStyleData: DropdownStyleData(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              buttonStyleData: const ButtonStyleData(
+                                height: 40,
+                                elevation: 0,
+                              ),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    overflow: TextOverflow.fade,
                                   ),
-                                ),
-                                dropdownStyleData: DropdownStyleData(
-                                  maxHeight: 300,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                                ),
-                                buttonStyleData: const ButtonStyleData(
-                                  height: 40,
-                                  elevation: 0,
-                                  width: double.maxFinite,
-                                ),
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      overflow: TextOverflow.fade,
-                                    ),
-                                onChanged: (newValue) {
-                                  setState(() {
-                                    selectedValue = newValue!;
-                                  });
-                                  context.read<HomeCubit>().filterUsers(
-                                        selectedGender.toLowerCase() == 'semua'
-                                            ? 'semua'
-                                            : selectedGender.toLowerCase() == 'laki-laki'
-                                                ? 'male'
-                                                : 'female',
-                                        disabilityName(selectedValue),
-                                      );
-                                },
-                                items:
-                                    disabilityListV2.map<DropdownMenuItem<String>>((String value) {
-                                  return DropdownMenuItem<String>(
-                                    value: value,
-                                    child: Text(value == 'Semua' ? 'Semua Disabilitas' : value),
-                                  );
-                                }).toList(),
-                                menuItemStyleData: const MenuItemStyleData(
-                                  padding: EdgeInsets.zero,
-                                ),
+                              onChanged: (newValue) {
+                                setState(() {
+                                  selectedGender = newValue!;
+                                });
+                                context.read<HomeCubit>().filterUsers(
+                                      selectedGender.toLowerCase() == 'semua'
+                                          ? 'semua'
+                                          : selectedGender.toLowerCase() == 'laki-laki'
+                                              ? 'male'
+                                              : 'female',
+                                      disabilityName(selectedValue),
+                                    );
+                              },
+                              items: ['Semua', 'Laki-Laki', 'Perempuan']
+                                  .map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value == 'Semua' ? 'Semua Gender' : value),
+                                );
+                              }).toList(),
+                              menuItemStyleData: const MenuItemStyleData(
+                                padding: EdgeInsets.zero,
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                    if (state.isLoading)
-                      const Expanded(
-                        child: Center(
-                          child: CircularProgressIndicator(),
+                      ),
+                      Flexible(
+                        child: Container(
+                          width: double.maxFinite,
+                          margin: const EdgeInsets.only(left: 5, top: 10, bottom: 10, right: 10),
+                          padding: const EdgeInsets.only(left: 10, right: 10),
+                          decoration: BoxDecoration(
+                            color: AppColors.white,
+                            borderRadius: BorderRadius.circular(AppDimens.standarBorder),
+                            border: Border.all(
+                              color: AppColors.lightGray,
+                            ),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton2<String>(
+                              value: selectedValue,
+                              isExpanded: true,
+                              isDense: true,
+                              iconStyleData: const IconStyleData(
+                                icon: Icon(
+                                  Icons.keyboard_arrow_down,
+                                ),
+                              ),
+                              dropdownStyleData: DropdownStyleData(
+                                maxHeight: 300,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                              ),
+                              buttonStyleData: const ButtonStyleData(
+                                height: 40,
+                                elevation: 0,
+                                width: double.maxFinite,
+                              ),
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    overflow: TextOverflow.fade,
+                                  ),
+                              onChanged: (newValue) {
+                                setState(() {
+                                  selectedValue = newValue!;
+                                });
+                                context.read<HomeCubit>().filterUsers(
+                                      selectedGender.toLowerCase() == 'semua'
+                                          ? 'semua'
+                                          : selectedGender.toLowerCase() == 'laki-laki'
+                                              ? 'male'
+                                              : 'female',
+                                      disabilityName(selectedValue),
+                                    );
+                              },
+                              items: disabilityListV2.map<DropdownMenuItem<String>>((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value == 'Semua' ? 'Semua Disabilitas' : value),
+                                );
+                              }).toList(),
+                              menuItemStyleData: const MenuItemStyleData(
+                                padding: EdgeInsets.zero,
+                              ),
+                            ),
+                          ),
                         ),
+                      ),
+                    ],
+                  ),
+                  if (state is HomeUsersSuccess) ...[
+                    if (state.isLoading)
+                      const Center(
+                        child: CircularProgressIndicator(),
                       ),
                     Expanded(
                       child: TabBarView(
@@ -337,14 +507,12 @@ class UserPageState extends State<UserPage> {
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ]
+                ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
+          );
+        });
   }
 
   Widget _users(HomeUsersSuccess state, bool isVerified) {
@@ -355,7 +523,7 @@ class UserPageState extends State<UserPage> {
             const Text('Data Tidak Ditemukan'),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => context.read<HomeCubit>().fetchUsers(),
+              onPressed: () => context.read<HomeCubit>().fetchUsers(isAdmin),
               child: const Text('Refresh'),
             ),
           ],
@@ -363,7 +531,7 @@ class UserPageState extends State<UserPage> {
       );
     }
     return RefreshIndicator(
-      onRefresh: () => context.read<HomeCubit>().fetchUsers(),
+      onRefresh: () => context.read<HomeCubit>().fetchUsers(isAdmin),
       child: ListView.separated(
         separatorBuilder: (context, index) => const Divider(height: 0),
         itemCount: state.users.where((element) => element.isVerified == isVerified).length,
@@ -404,13 +572,14 @@ class UserPageState extends State<UserPage> {
                     }
                   },
                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: 'Verifikasi',
-                      child: ListTile(
-                        leading: const Icon(Icons.verified_outlined),
-                        title: Text('${isVerified ? 'Batalkan' : ''} Verifikasi'),
+                    if (isAdmin)
+                      PopupMenuItem<String>(
+                        value: 'Verifikasi',
+                        child: ListTile(
+                          leading: const Icon(Icons.verified_outlined),
+                          title: Text('${isVerified ? 'Batalkan' : ''} Verifikasi'),
+                        ),
                       ),
-                    ),
                     const PopupMenuItem<String>(
                       value: 'Edit',
                       child: ListTile(

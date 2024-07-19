@@ -4,15 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:some_app/src/core/util/usescases/usecases.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/data/models/edit_model.dart';
+import 'package:some_app/src/feature/authentication/data/models/employee_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/token_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_response_model.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_by_id_usecase.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/edit_employee_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_in_usecases.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/logout_usecase.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/sign_karyawan_usercase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_up_usecase.dart';
 
 part 'auth_state.dart';
@@ -25,7 +28,8 @@ class AuthCubit extends Cubit<AuthState> {
   final EditByIdUseCase editByIdUseCase;
   final RefreshTokenUseCase refreshUseCase;
   final AuthSharedPrefs authSharedPrefs;
-
+  final SignEmployeeUseCase signEmployeeUseCase;
+  final EditEmployeeUseCase editEmployeeUseCase;
   AuthCubit(
     this.signInUseCase,
     this.authSharedPrefs,
@@ -34,6 +38,8 @@ class AuthCubit extends Cubit<AuthState> {
     this.editUseCase,
     this.editByIdUseCase,
     this.refreshUseCase,
+    this.signEmployeeUseCase,
+    this.editEmployeeUseCase,
   ) : super(AuthInitial());
 
   Future<void> signIn(SignInModel params) async {
@@ -54,14 +60,43 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> signUp(SignUpModel params) async {
+  Future<void> signUp(bool isAdmin, SignUpModel params) async {
     try {
       emit(AuthLoading());
-      final result = await signUpUseCase.call(params);
+      final result = await signUpUseCase.call(SignUpParams(isAdmin: isAdmin, model: params));
       result.fold((l) {
         emit(AuthFailure(l.errorMessage));
       }, (r) async {
         emit(AuthRegistered());
+      });
+    } catch (error) {
+      emit(AuthFailure(error.toString()));
+    }
+  }
+
+  Future<void> createEmplyoee(EmployeeModel params) async {
+    try {
+      emit(AuthLoading());
+      final result = await signEmployeeUseCase.call(params);
+      result.fold((l) {
+        emit(AuthFailure(l.errorMessage));
+      }, (r) async {
+        emit(AuthEmployeCreated());
+      });
+    } catch (error) {
+      emit(AuthFailure(error.toString()));
+    }
+  }
+
+  Future<void> editEmplyoee(int id, EmployeeModel params) async {
+    try {
+      emit(AuthLoading());
+      final result =
+          await editEmployeeUseCase.call(EditIdEmployeeParams(firstValue: id, secondValue: params));
+      result.fold((l) {
+        emit(AuthFailure(l.errorMessage));
+      }, (r) async {
+        emit(AuthEmployeEdited(r));
       });
     } catch (error) {
       emit(AuthFailure(error.toString()));

@@ -10,12 +10,16 @@ import 'package:some_app/src/core/util/injections.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/delete_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_by_id_usecase.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/edit_employee_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_in_usecases.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/logout_usecase.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/sign_karyawan_usercase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_up_usecase.dart';
 import 'package:some_app/src/feature/authentication/presentations/cubit/auth_cubit.dart';
+import 'package:some_app/src/feature/employee/presentations/cubit/employee_cubit.dart';
+import 'package:some_app/src/feature/home/domain/usecase/employee_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/user_id_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/user_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/users_usecase.dart';
@@ -89,17 +93,24 @@ class _AppState extends State<App> with WidgetsBindingObserver {
                     getIt<EditUseCase>(),
                     getIt<EditByIdUseCase>(),
                     getIt<RefreshTokenUseCase>(),
+                    getIt<SignEmployeeUseCase>(),
+                    getIt<EditEmployeeUseCase>(),
                   ),
                 ),
                 BlocProvider<HomeCubit>(
                   create: (context) => HomeCubit(
                     getIt<UserIdUseCase>(),
-                    getIt<UserUseCase>(),
                     getIt<UsersUseCase>(),
                     getIt<VerifyUseCase>(),
                     getIt<RefreshTokenUseCase>(),
                     getIt<DeleteUseCase>(),
                     getIt<AuthSharedPrefs>(),
+                  ),
+                ),
+                BlocProvider<EmployeeCubit>(
+                  create: (context) => EmployeeCubit(
+                    getIt<UserUseCase>(),
+                    getIt<EmployeeUseCase>(),
                   ),
                 ),
               ],
