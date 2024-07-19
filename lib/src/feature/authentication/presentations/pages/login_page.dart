@@ -205,28 +205,28 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       ),
                       const SizedBox(height: 15),
-                      Align(
-                        alignment: Alignment.center,
-                        child: TextButton(
-                          onPressed: () => context.pushNamed('register'),
-                          child: Text.rich(
-                            TextSpan(
-                              text: 'Belum mendaftar? ',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: AppColors.secondary,
-                                  ),
-                              children: [
-                                TextSpan(
-                                  text: 'Daftar Sekarang',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                        color: AppColors.third,
-                                      ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                      // Align(
+                      //   alignment: Alignment.center,
+                      //   child: TextButton(
+                      //     onPressed: () => context.pushNamed('register'),
+                      //     child: Text.rich(
+                      //       TextSpan(
+                      //         text: 'Belum mendaftar? ',
+                      //         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      //               color: AppColors.secondary,
+                      //             ),
+                      //         children: [
+                      //           TextSpan(
+                      //             text: 'Daftar Sekarang',
+                      //             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      //                   color: AppColors.third,
+                      //                 ),
+                      //           )
+                      //         ],
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
