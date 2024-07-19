@@ -32,7 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  UserType userType = UserType.user;
+  UserType userType = UserType.admin;
 
   @override
   Widget build(BuildContext context) {
@@ -65,23 +65,23 @@ class _LoginPageState extends State<LoginPage> {
                                 size: 40,
                               ),
                             ),
-                            SegmentedButton<UserType>(
-                              segments: [
-                                ButtonSegment<UserType>(
-                                  value: UserType.user,
-                                  icon: Icon(MdiIcons.accountOutline),
-                                ),
-                                ButtonSegment<UserType>(
-                                  value: UserType.admin,
-                                  icon: Icon(MdiIcons.accountLockOutline),
-                                ),
-                              ],
-                              selected: <UserType>{userType},
-                              onSelectionChanged: (p0) => setState(() {
-                                nikController.clear();
-                                userType = p0.first;
-                              }),
-                            )
+                            // SegmentedButton<UserType>(
+                            //   segments: [
+                            //     ButtonSegment<UserType>(
+                            //       value: UserType.user,
+                            //       icon: Icon(MdiIcons.accountOutline),
+                            //     ),
+                            //     ButtonSegment<UserType>(
+                            //       value: UserType.admin,
+                            //       icon: Icon(MdiIcons.accountLockOutline),
+                            //     ),
+                            //   ],
+                            //   selected: <UserType>{userType},
+                            //   onSelectionChanged: (p0) => setState(() {
+                            //     nikController.clear();
+                            //     userType = p0.first;
+                            //   }),
+                            // )
                           ],
                         ),
                         const SizedBox(height: 15),

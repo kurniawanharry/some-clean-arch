@@ -10,6 +10,9 @@ class UserModel {
   String? gender;
   String? birthDate;
   String? disability;
+  String? fatherName;
+  String? motherName;
+  String? placeId;
   String? address;
   String? latitude;
   String? longitude;
@@ -33,6 +36,9 @@ class UserModel {
     this.id,
     this.createdAt,
     this.updatedAt,
+    this.fatherName,
+    this.motherName,
+    this.placeId,
   });
 
   /// factory.

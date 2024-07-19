@@ -11,11 +11,11 @@ class UserResponseModel {
   String? birthDate;
   String? disability;
   String? address;
-  double? latitude;
-  double? longitude;
+  String? latitude;
+  String? longitude;
+  bool? isVerified;
   String? createdAt;
   String? updatedAt;
-  bool? isVerified;
   String? password;
 
   UserResponseModel({

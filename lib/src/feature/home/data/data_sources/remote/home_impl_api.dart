@@ -40,7 +40,7 @@ class HomeImpleApi extends AbstractHomeApi {
   @override
   Future<List<UserModel>> fetchUsers() async {
     try {
-      final result = await dio.get('${Env.urlApiAdmin}/users');
+      final result = await dio.get('${Env.urlApiAdmin}/disabled');
 
       if (result.data == null) {
         throw ServerException("Unknown Error", result.statusCode);
@@ -60,7 +60,7 @@ class HomeImpleApi extends AbstractHomeApi {
   Future<UserModel> toggleVerification(int id, bool value) async {
     try {
       final result =
-          await dio.post('${Env.urlApiAdmin}/users/verify/$id', data: {"is_verified": value});
+          await dio.post('${Env.urlApiAdmin}/disabled/verify/$id', data: {"is_verified": value});
 
       if (result.data == null) {
         throw ServerException("Unknown Error", result.statusCode);

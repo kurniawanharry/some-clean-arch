@@ -17,7 +17,7 @@ class GoogleMapPage extends StatefulWidget {
 
 class _GoogleMapPageState extends State<GoogleMapPage> {
   final Completer<GoogleMapController> _controller = Completer();
-  static const LatLng _center = LatLng(0, 0);
+  static const LatLng _center = LatLng(-1.269160, 116.825264);
   LatLng _currentPosition = _center;
   String _currentAddress = '';
   Timer? _debounce;
@@ -177,8 +177,8 @@ class _GoogleMapPageState extends State<GoogleMapPage> {
   }
 
   Future<void> _getCurrentLocation() async {
-    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-    _currentPosition = LatLng(position.latitude, position.longitude);
+    // Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+    // // _currentPosition = LatLng(position.latitude, position.longitude);
     _getAddressFromLatLng(_currentPosition);
     _controller.future
         .then((value) => value.animateCamera(CameraUpdate.newLatLngZoom(_currentPosition, 18.0)));

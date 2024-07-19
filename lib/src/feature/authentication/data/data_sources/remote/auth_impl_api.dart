@@ -41,7 +41,7 @@ class AuthImplApi extends AbstractAuthApi {
   Future<UserResponseModel> signUp(SignUpModel params) async {
     try {
       final result =
-          await dio.post('${Env.urlApiAuth}/register', data: jsonEncode(params.toJson()));
+          await dio.post('${Env.urlApiAdmin}/disabled/create', data: jsonEncode(params.toJson()));
       if (result.data == null) {
         throw ServerException("Unknown Error", result.statusCode);
       }
@@ -78,7 +78,7 @@ class AuthImplApi extends AbstractAuthApi {
   Future<UserResponseModel> edit(EditModel params) async {
     try {
       final result = await dio.post(
-        Env.urlApiUser,
+        Env.urlApiAdmin,
         data: jsonEncode(params.toJson()),
       );
       if (result.data == null) {
@@ -117,7 +117,7 @@ class AuthImplApi extends AbstractAuthApi {
   Future<UserResponseModel> editById(int id, EditModel params) async {
     try {
       final result = await dio.post(
-        '${Env.urlApiAdmin}/users/$id',
+        '${Env.urlApiAdmin}/disabled/update/$id',
         data: jsonEncode(params.toJson()),
       );
       if (result.data == null) {
@@ -138,7 +138,7 @@ class AuthImplApi extends AbstractAuthApi {
   Future<UserModel> delete(int id) async {
     try {
       final result = await dio.post(
-        '${Env.urlApiAdmin}/users/delete/$id',
+        '${Env.urlApiAdmin}/disabled/delete/$id',
       );
       if (result.data == null) {
         throw ServerException("Unknown Error", result.statusCode);

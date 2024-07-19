@@ -17,6 +17,9 @@ UserModel _$UserModelFromJson(Map<String, dynamic> json) => UserModel(
       gender: json['gender'] as String?,
       isVerified: json['is_verified'] as bool?,
       latitude: json['latitude'] as String?,
+      fatherName: json['father_name'] as String?,
+      motherName: json['mother_name'] as String?,
+      placeId: json['place_id'] as String?,
       // latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: json['longitude'] as String?,
       id: (json['id'] as num?)?.toInt(),
@@ -39,4 +42,7 @@ Map<String, dynamic> _$UserModelToJson(UserModel instance) => <String, dynamic>{
       'updated_at': instance.updatedAt,
       'is_verified': instance.isVerified,
       'password': instance.password,
+      'father_name': instance.fatherName,
+      'mother_name': instance.motherName,
+      'place_id': instance.placeId,
     };

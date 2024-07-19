@@ -61,6 +61,7 @@ dependencies:
   fluttertoast: ^8.2.6
   flutter_launcher_icons: ^0.13.1
   dropdown_button2: ^2.3.9
+  syncfusion_flutter_maps: ^25.2.7
 
 dev_dependencies:
   flutter_test:

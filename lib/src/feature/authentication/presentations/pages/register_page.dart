@@ -10,7 +10,6 @@ import 'package:material_design_icons_flutter/material_design_icons_flutter.dart
 import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/core/styles/app_dimens.dart';
 import 'package:some_app/src/feature/authentication/data/models/edit_model.dart';
-import 'package:some_app/src/feature/authentication/data/models/sign_in_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/sign_up_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
 import 'package:some_app/src/feature/authentication/presentations/cubit/auth_cubit.dart';
@@ -42,6 +41,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final TextEditingController nikController = TextEditingController();
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController dadController = TextEditingController();
+  final TextEditingController momController = TextEditingController();
   final TextEditingController birthController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
@@ -56,7 +57,8 @@ class _RegisterPageState extends State<RegisterPage> {
     if (widget.data != null) {
       nikController.text = widget.data?.nik ?? '';
       nameController.text = widget.data?.name ?? '';
-      nameController.text = widget.data?.name ?? '';
+      dadController.text = widget.data?.fatherName ?? '';
+      momController.text = widget.data?.motherName ?? '';
       gender = widget.data?.gender == 'male' ? 0 : 1;
       selectedValue = disabilityType(widget.data?.disability ?? '');
       addressController.text = widget.data?.address ?? '';
@@ -69,8 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
       List<String> dateParts = widget.data?.birthDate?.split('-') ?? [];
 
 // Create a DateTime object from the split parts
-      DateTime date =
-          DateTime(int.parse(dateParts[0]), int.parse(dateParts[1]), int.parse(dateParts[2]));
+      DateTime date = DateTime(int.parse(dateParts[0]), int.parse(dateParts[1]));
 
       dateController.text = DateFormat('dd-MM-yyyy').format(date);
 
@@ -123,7 +124,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Hero(
                     tag: 'auth-hero',
                     child: Text(
-                      widget.data == null ? 'Register' : 'Edit Profile',
+                      widget.data == null ? 'Register User' : 'Edit Profile',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
                             fontSize: 25,
@@ -188,74 +189,74 @@ class _RegisterPageState extends State<RegisterPage> {
                             return null;
                           },
                         ),
-                        if (widget.data == null) ...[
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            controller: passwordController,
-                            obscureText: !showPassword,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              contentPadding:
-                                  EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
-                              constraints: const BoxConstraints(minHeight: 40),
-                              hintText: 'Password',
-                              prefixIcon: Icon(
-                                MdiIcons.lockOutline,
-                              ),
-                              suffixIcon: GestureDetector(
-                                onTap: () => togglePassword(),
-                                child: Icon(
-                                  showPassword ? MdiIcons.eyeOutline : MdiIcons.eyeOffOutline,
-                                ),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value?.isEmpty ?? false) {
-                                return 'Password Masih Kosong';
-                              } else if (value!.length < 6) {
-                                return 'Password minimal 6 karakter';
-                              } else if (passwordController.value.text !=
-                                  cPasswordController.value.text) {
-                                return 'Password tidak sama';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 12),
-                          TextFormField(
-                            autovalidateMode: AutovalidateMode.onUserInteraction,
-                            controller: cPasswordController,
-                            obscureText: !showCPassword,
-                            decoration: InputDecoration(
-                              isDense: true,
-                              contentPadding:
-                                  EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
-                              constraints: const BoxConstraints(minHeight: 40),
-                              hintText: 'Confirm Password',
-                              prefixIcon: Icon(
-                                MdiIcons.lockOutline,
-                              ),
-                              suffixIcon: GestureDetector(
-                                onTap: () => toggleCPassword(),
-                                child: Icon(
-                                  showCPassword ? MdiIcons.eyeOutline : MdiIcons.eyeOffOutline,
-                                ),
-                              ),
-                            ),
-                            validator: (value) {
-                              if (value?.isEmpty ?? false) {
-                                return 'Confirm Password Masih Kosong';
-                              } else if (value!.length < 6) {
-                                return 'Password minimal 6 karakter';
-                              } else if (passwordController.value.text !=
-                                  cPasswordController.value.text) {
-                                return 'Password tidak sama';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
+                        // if (widget.data == null) ...[
+                        //   const SizedBox(height: 12),
+                        //   TextFormField(
+                        //     autovalidateMode: AutovalidateMode.onUserInteraction,
+                        //     controller: passwordController,
+                        //     obscureText: !showPassword,
+                        //     decoration: InputDecoration(
+                        //       isDense: true,
+                        //       contentPadding:
+                        //           EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
+                        //       constraints: const BoxConstraints(minHeight: 40),
+                        //       hintText: 'Password',
+                        //       prefixIcon: Icon(
+                        //         MdiIcons.lockOutline,
+                        //       ),
+                        //       suffixIcon: GestureDetector(
+                        //         onTap: () => togglePassword(),
+                        //         child: Icon(
+                        //           showPassword ? MdiIcons.eyeOutline : MdiIcons.eyeOffOutline,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //     validator: (value) {
+                        //       if (value?.isEmpty ?? false) {
+                        //         return 'Password Masih Kosong';
+                        //       } else if (value!.length < 6) {
+                        //         return 'Password minimal 6 karakter';
+                        //       } else if (passwordController.value.text !=
+                        //           cPasswordController.value.text) {
+                        //         return 'Password tidak sama';
+                        //       }
+                        //       return null;
+                        //     },
+                        //   ),
+                        //   const SizedBox(height: 12),
+                        //   TextFormField(
+                        //     autovalidateMode: AutovalidateMode.onUserInteraction,
+                        //     controller: cPasswordController,
+                        //     obscureText: !showCPassword,
+                        //     decoration: InputDecoration(
+                        //       isDense: true,
+                        //       contentPadding:
+                        //           EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
+                        //       constraints: const BoxConstraints(minHeight: 40),
+                        //       hintText: 'Confirm Password',
+                        //       prefixIcon: Icon(
+                        //         MdiIcons.lockOutline,
+                        //       ),
+                        //       suffixIcon: GestureDetector(
+                        //         onTap: () => toggleCPassword(),
+                        //         child: Icon(
+                        //           showCPassword ? MdiIcons.eyeOutline : MdiIcons.eyeOffOutline,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //     validator: (value) {
+                        //       if (value?.isEmpty ?? false) {
+                        //         return 'Confirm Password Masih Kosong';
+                        //       } else if (value!.length < 6) {
+                        //         return 'Password minimal 6 karakter';
+                        //       } else if (passwordController.value.text !=
+                        //           cPasswordController.value.text) {
+                        //         return 'Password tidak sama';
+                        //       }
+                        //       return null;
+                        //     },
+                        //   ),
+                        // ],
                         const SizedBox(height: 20),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -354,7 +355,50 @@ class _RegisterPageState extends State<RegisterPage> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          controller: dadController,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
+                            constraints: const BoxConstraints(minHeight: 40),
+                            hintText: 'Nama Ayah',
+                            prefixIcon: Icon(
+                              MdiIcons.accountOutline,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value?.isEmpty ?? false) {
+                              return 'Nama Masih Kosong';
+                            }
+
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        TextFormField(
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          controller: momController,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
+                            constraints: const BoxConstraints(minHeight: 40),
+                            hintText: 'Nama Ibu',
+                            prefixIcon: Icon(
+                              MdiIcons.accountOutline,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value?.isEmpty ?? false) {
+                              return 'Nama Masih Kosong';
+                            }
+
+                            return null;
+                          },
+                        ),
                         const SizedBox(height: 20),
+
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 6),
                           child: Text(
@@ -462,13 +506,16 @@ class _RegisterPageState extends State<RegisterPage> {
                       BlocConsumer<AuthCubit, AuthState>(
                         listener: (context, state) {
                           if (state is AuthRegistered) {
-                            final nik = nikController.text;
-                            final password = passwordController.value.text;
-                            var request = SignInModel(
-                              nik: nik,
-                              password: password,
-                            );
-                            context.read<AuthCubit>().signIn(request);
+                            context.goNamed('home', pathParameters: {
+                              'type': '200',
+                            });
+                            // final nik = nikController.text;
+                            // final password = passwordController.value.text;
+                            // var request = SignInModel(
+                            //   nik: nik,
+                            //   password: password,
+                            // );
+                            // context.read<AuthCubit>().signIn(request);
                           }
 
                           if (state is AuthSuccess) {
@@ -500,8 +547,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                 disability: state.model.disability,
                                 gender: state.model.gender,
                                 isVerified: state.model.isVerified,
-                                latitude: state.model.latitude.toString(),
-                                longitude: state.model.longitude.toString(),
+                                latitude: state.model.latitude,
+                                longitude: state.model.longitude,
                                 createdAt: state.model.createdAt,
                                 updatedAt: state.model.updatedAt,
                               ),
@@ -521,7 +568,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               final address = addressController.value.text;
                               // final birth = birthController.value.text;
                               final date = dateController.value.text;
-                              final password = passwordController.value.text;
+                              // final password = passwordController.value.text;
 
                               if (date.isEmpty) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -543,7 +590,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                 var currentLocation = await location.getLocation();
 
                                 latLng = LatLng(
-                                    currentLocation.latitude ?? 0, currentLocation.longitude ?? 0);
+                                  currentLocation.latitude ?? 0,
+                                  currentLocation.longitude ?? 0,
+                                );
                               }
 
                               if (widget.data == null) {
@@ -554,9 +603,14 @@ class _RegisterPageState extends State<RegisterPage> {
                                   birthDate: formattedDate,
                                   disability: disabilityName(selectedValue),
                                   gender: gender == 0 ? 'male' : 'female',
-                                  latitude: latLng?.latitude,
-                                  longitude: latLng?.longitude,
-                                  password: password,
+                                  latitude: '${latLng?.latitude}',
+                                  longitude: '${latLng?.longitude}',
+                                  fatherName: dadController.value.text,
+                                  motherName: momController.value.text,
+                                  placeId: '1',
+                                  ktp: 'file',
+                                  photo: 'file',
+                                  // password: password,
                                 );
                                 // ignore: use_build_context_synchronously
                                 context.read<AuthCubit>().signUp(request);
@@ -568,20 +622,19 @@ class _RegisterPageState extends State<RegisterPage> {
                                   birthDate: formattedDate,
                                   disability: disabilityName(selectedValue),
                                   gender: gender == 0 ? 'male' : 'female',
-                                  latitude: latLng?.latitude,
-                                  longitude: latLng?.longitude,
+                                  latitude: '${latLng?.latitude}',
+                                  longitude: '${latLng?.longitude}',
+                                  fatherName: dadController.value.text,
+                                  motherName: momController.value.text,
+                                  placeId: '1',
+                                  ktp: 'file',
+                                  photo: 'file',
                                 );
-
-                                if (widget.type == 100) {
-                                  // ignore: use_build_context_synchronously
-                                  context.read<AuthCubit>().editById(
-                                        widget.data!.id!,
-                                        request,
-                                      );
-                                } else {
-                                  // ignore: use_build_context_synchronously
-                                  context.read<AuthCubit>().edit(request);
-                                }
+                                // ignore: use_build_context_synchronously
+                                context.read<AuthCubit>().editById(
+                                      widget.data!.id!,
+                                      request,
+                                    );
                               }
                             },
                             child: state is AuthLoading
