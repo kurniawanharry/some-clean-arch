@@ -155,4 +155,19 @@ class HomeCubit extends Cubit<HomeState> {
     //   emit(HomeUserSuccess(model));
     // }
   }
+
+  filterMap(bool verif, bool nonVerif) {
+    if (verif && nonVerif) {
+      filteredUsers = List.from(allUsers);
+    } else if (!verif && nonVerif) {
+      var list = allUsers.where((user) => user.isVerified == false).toList();
+      filteredUsers = List.from(list);
+    } else if (verif && !nonVerif) {
+      var list = allUsers.where((user) => user.isVerified == true).toList();
+      filteredUsers = List.from(list);
+    } else {
+      filteredUsers = [];
+    }
+    emit(HomeUsersSuccess(filteredUsers));
+  }
 }

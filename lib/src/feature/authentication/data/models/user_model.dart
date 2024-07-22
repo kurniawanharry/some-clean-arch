@@ -18,6 +18,8 @@ class UserModel {
   String? longitude;
   String? createdAt;
   String? updatedAt;
+  String? photo;
+  String? ktp;
   bool? isVerified;
   String? password;
 
@@ -38,6 +40,8 @@ class UserModel {
     this.updatedAt,
     this.fatherName,
     this.motherName,
+    this.photo,
+    this.ktp,
     this.placeId,
   });
 

@@ -20,8 +20,8 @@ String handleDioError(DioError error) {
       break;
     case DioErrorType.badResponse:
       {
-        if (error.response?.data['error'] != null) {
-          errorDescription = error.response?.data['error'];
+        if (error.response?.data['status'] != null) {
+          errorDescription = error.response?.data['message'];
         } else if (error.response?.data['code'] != null &&
             (error.response?.data['code'] ?? "0") != "0") {
           errorDescription = error.response?.data['msg'];

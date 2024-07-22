@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -14,7 +13,6 @@ import 'package:some_app/src/core/util/injections.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/data/models/employee_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
-import 'package:some_app/src/feature/authentication/presentations/cubit/auth_cubit.dart';
 import 'package:some_app/src/feature/authentication/presentations/pages/register_page.dart';
 import 'package:some_app/src/feature/employee/presentations/cubit/employee_cubit.dart';
 import 'package:some_app/src/feature/home/presentations/cubit/home_cubit.dart';
@@ -153,45 +151,30 @@ class UserPageState extends State<UserPage> {
                 return const SizedBox();
               },
             ),
-          BlocConsumer<AuthCubit, AuthState>(
-            listener: (context, state) {
-              if (state is AuthFailure) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.message)),
-                );
-              }
-            },
-            builder: (context, state) {
-              return Row(
-                children: [
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.secondary,
-                      backgroundColor: AppColors.main,
-                    ),
-                    onPressed: () => context.push('/register/create/${isAdmin ? '100' : '200'}'),
-                    icon: const Icon(Icons.add),
-                    label: state is AuthLoading
-                        ? const CircularProgressIndicator()
-                        : const Text('User'),
+          Row(
+            children: [
+              TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.secondary,
+                  backgroundColor: AppColors.main,
+                ),
+                onPressed: () => context.push('/register/create/${isAdmin ? '100' : '200'}'),
+                icon: const Icon(Icons.add),
+                label: const Text('User'),
+              ),
+              if (isAdmin) ...[
+                const SizedBox(width: 10),
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.secondary,
+                    backgroundColor: AppColors.main,
                   ),
-                  if (isAdmin) ...[
-                    const SizedBox(width: 10),
-                    TextButton.icon(
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.secondary,
-                        backgroundColor: AppColors.main,
-                      ),
-                      onPressed: () => context.pushNamed('employee'),
-                      icon: const Icon(Icons.add),
-                      label: state is AuthLoading
-                          ? const CircularProgressIndicator()
-                          : const Text('Karyawan'),
-                    ),
-                  ]
-                ],
-              );
-            },
+                  onPressed: () => context.pushNamed('employee'),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Karyawan'),
+                ),
+              ]
+            ],
           ),
         ],
       ),
@@ -260,7 +243,7 @@ class UserPageState extends State<UserPage> {
                       child: ListView.separated(
                         separatorBuilder: (context, index) => const Divider(height: 0),
                         itemCount: state.users.length,
-                        padding: EdgeInsets.zero,
+                        padding: const EdgeInsets.only(bottom: 100),
                         itemBuilder: (context, index) {
                           var user = state.users[index];
 
@@ -539,7 +522,7 @@ class UserPageState extends State<UserPage> {
       child: ListView.separated(
         separatorBuilder: (context, index) => const Divider(height: 0),
         itemCount: state.users.where((element) => element.isVerified == isVerified).length,
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.only(bottom: 100),
         itemBuilder: (context, index) {
           var user =
               state.users.where((element) => element.isVerified == isVerified).toList()[index];
@@ -604,7 +587,7 @@ class UserPageState extends State<UserPage> {
                   final Uint8List markerIcon = await createCustomMarkerBitmap(
                     'NIK: ${user.nik}\nNama: ${user.name}\nDisabilitas: ${user.disability}\n',
                     // "assets/images/clover_tree.png",
-                    "https://fastcdn.hoyoverse.com/content-v2/hk4e/113484/1a0e331a984e482f84433eac47cd5e3b_3721947678899810120.jpg",
+                    user.photo ?? '',
                     user.isVerified ?? false,
                   );
                   var marker = Marker(

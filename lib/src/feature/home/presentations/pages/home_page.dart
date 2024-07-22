@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/core/util/injections.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
@@ -30,44 +30,12 @@ class _HomePageState extends State<HomePage> {
 
   GoogleMapController? _controller;
 
-  final Set<Marker> _markers = {};
+  Set<Marker> _markers = {};
   Set<Polygon> _polygons = {};
-  double _currentZoom = 12;
+  final double _currentZoom = 12;
 
-  _loadGeoJson() async {
-    String data = await DefaultAssetBundle.of(context).loadString('assets/balikpapan.json');
-    Map<String, dynamic> geoJson = jsonDecode(data);
-
-    Set<Polygon> polygons = {};
-    for (var coordinates in geoJson['coordinates']) {
-      for (var polygon in coordinates) {
-        List<LatLng> polygonCoords = [];
-        for (var coord in polygon) {
-          polygonCoords.add(
-            LatLng(
-              double.parse(coord[1].toString()),
-              double.parse(
-                coord[0].toString(),
-              ),
-            ),
-          );
-        }
-        polygons.add(
-          Polygon(
-            polygonId: PolygonId(polygonCoords.toString()),
-            points: polygonCoords,
-            strokeColor: Colors.blue,
-            strokeWidth: 3,
-            fillColor: Colors.blue.withOpacity(0.2),
-          ),
-        );
-      }
-    }
-
-    setState(() {
-      _polygons = polygons;
-    });
-  }
+  bool showVerif = true;
+  bool showNonVerif = true;
 
   @override
   void initState() {
@@ -82,16 +50,6 @@ class _HomePageState extends State<HomePage> {
   void dispose() {
     _controller?.dispose();
     super.dispose();
-  }
-
-  void _zoomIn() {
-    _currentZoom += 1;
-    _controller?.moveCamera(CameraUpdate.zoomTo(_currentZoom));
-  }
-
-  void _zoomOut() {
-    _currentZoom -= 1;
-    _controller?.moveCamera(CameraUpdate.zoomTo(_currentZoom));
   }
 
   @override
@@ -114,11 +72,12 @@ class _HomePageState extends State<HomePage> {
           bloc: _cubit,
           listener: (context, state) async {
             if (state is HomeUsersSuccess) {
+              Set<Marker> tempMarkers = {};
               for (var data in state.users) {
                 final Uint8List markerIcon = await createCustomMarkerBitmap(
                   'NIK: ${data.nik}\nNama: ${data.name}\nDisabilitas: ${data.disability}\n',
                   // "assets/images/clover_tree.png",
-                  "https://fastcdn.hoyoverse.com/content-v2/hk4e/113484/1a0e331a984e482f84433eac47cd5e3b_3721947678899810120.jpg",
+                  data.photo ?? '',
                   data.isVerified ?? false,
                 );
                 var marker = Marker(
@@ -130,8 +89,9 @@ class _HomePageState extends State<HomePage> {
                   // ignore: deprecated_member_use
                   icon: BitmapDescriptor.fromBytes(markerIcon),
                 );
-                setState(() => _markers.add(marker));
+                tempMarkers.add(marker);
               }
+              setState(() => _markers = tempMarkers);
             }
           },
           child: BlocBuilder<HomeCubit, HomeState>(
@@ -170,38 +130,25 @@ class _HomePageState extends State<HomePage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Legend',
-                                    style: Theme.of(context).textTheme.bodyLarge,
-                                  ),
-                                  const SizedBox(height: 10),
                                   Row(
                                     children: [
-                                      Container(
-                                        height: 20,
-                                        width: 20,
-                                        decoration: BoxDecoration(
-                                          color: Colors.pink.shade200,
-                                          border: Border.all(
-                                            width: 1,
-                                          ),
-                                        ),
+                                      Text(
+                                        'Legend',
+                                        style: Theme.of(context).textTheme.bodyMedium,
                                       ),
                                       const SizedBox(width: 5),
-                                      Text(
-                                        'Belum Diverifikasi',
-                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                              fontSize: 14,
-                                            ),
-                                      )
+                                      GestureDetector(
+                                        onTap: () => context.read<HomeCubit>().fetchUsers(isAdmin),
+                                        child: Icon(MdiIcons.refresh, size: 20),
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 10),
                                   Row(
                                     children: [
                                       Container(
-                                        height: 20,
-                                        width: 20,
+                                        height: 15,
+                                        width: 15,
                                         decoration: BoxDecoration(
                                           color: AppColors.white,
                                           border: Border.all(
@@ -212,12 +159,48 @@ class _HomePageState extends State<HomePage> {
                                       const SizedBox(width: 5),
                                       Text(
                                         'Sudah Diverifikasi',
-                                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                              fontSize: 14,
-                                            ),
-                                      )
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      GestureDetector(
+                                        onTap: () => toggleVerif(context),
+                                        child: Icon(
+                                          showVerif ? MdiIcons.eyeOutline : MdiIcons.eyeOffOutline,
+                                          size: 20,
+                                        ),
+                                      ),
                                     ],
-                                  )
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        height: 15,
+                                        width: 15,
+                                        decoration: BoxDecoration(
+                                          color: Colors.pink.shade200,
+                                          border: Border.all(
+                                            width: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        'Belum Diverifikasi',
+                                        style: Theme.of(context).textTheme.bodySmall,
+                                      ),
+                                      const SizedBox(width: 10),
+                                      GestureDetector(
+                                        onTap: () => toggleNonVerif(context),
+                                        child: Icon(
+                                          showNonVerif
+                                              ? MdiIcons.eyeOutline
+                                              : MdiIcons.eyeOffOutline,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -237,6 +220,53 @@ class _HomePageState extends State<HomePage> {
 
   void _onMapCreated(GoogleMapController controller) {
     _controller = controller;
+  }
+
+  _loadGeoJson() async {
+    String data = await DefaultAssetBundle.of(context).loadString('assets/balikpapan.json');
+    Map<String, dynamic> geoJson = jsonDecode(data);
+
+    Set<Polygon> polygons = {};
+    for (var coordinates in geoJson['coordinates']) {
+      for (var polygon in coordinates) {
+        List<LatLng> polygonCoords = [];
+        for (var coord in polygon) {
+          polygonCoords.add(
+            LatLng(
+              double.parse(coord[1].toString()),
+              double.parse(
+                coord[0].toString(),
+              ),
+            ),
+          );
+        }
+        polygons.add(
+          Polygon(
+            polygonId: PolygonId(polygonCoords.toString()),
+            points: polygonCoords,
+            strokeColor: Colors.blue,
+            strokeWidth: 3,
+            fillColor: Colors.blue.withOpacity(0.2),
+          ),
+        );
+      }
+    }
+
+    setState(() {
+      _polygons = polygons;
+    });
+  }
+
+  toggleVerif(BuildContext context) {
+    setState(() => showVerif = !showVerif);
+
+    context.read<HomeCubit>().filterMap(showVerif, showNonVerif);
+  }
+
+  toggleNonVerif(BuildContext context) {
+    setState(() => showNonVerif = !showNonVerif);
+
+    context.read<HomeCubit>().filterMap(showVerif, showNonVerif);
   }
 }
 
@@ -308,15 +338,20 @@ Future<Uint8List> createCustomMarkerBitmap(String text, String imagePath, bool i
   canvas.drawPath(path, trianglePaint);
 
   // Download and draw the image from the URL using Dio
-  final Dio dio = Dio();
-  final Response<List<int>> response = await dio.get<List<int>>(
-    imagePath,
-    options: Options(responseType: ResponseType.bytes),
-  );
-  final Uint8List bytes = Uint8List.fromList(response.data!);
+  // Load and draw the image from assets
+  Uint8List? bytes;
+  if (imagePath.isEmpty || imagePath == 'file') {
+    final ByteData data = await rootBundle.load('assets/images/user_icon.png');
+    bytes = data.buffer.asUint8List();
+  } else {
+    bytes = base64Decode(imagePath);
+  }
+
   final ui.Codec codec =
       await ui.instantiateImageCodec(bytes, targetWidth: 100); // Adjust image size
   final ui.FrameInfo fi = await codec.getNextFrame();
+
+  // Decode the base64 string back to bytes for use in the canvas
 
   final ui.Image image = fi.image;
   // Center image vertically

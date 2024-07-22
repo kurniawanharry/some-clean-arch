@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -5,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:some_app/src/core/styles/app_colors.dart';
@@ -35,6 +39,7 @@ class _RegisterPageState extends State<RegisterPage> {
   int type = 100;
   LatLng? latLng;
   DateTime selectedDate = DateTime.now();
+  final ImagePicker _imagePicker = ImagePicker();
 
   String selectedValue = 'Disabilitas Netra';
 
@@ -54,6 +59,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool showPassword = false;
   bool showCPassword = false;
+
+  String imageUrl = '';
+  String imageid = '';
 
   @override
   void initState() {
@@ -148,6 +156,29 @@ class _RegisterPageState extends State<RegisterPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Align(
+                          alignment: Alignment.center,
+                          child: GestureDetector(
+                            onTap: () async {
+                              var image = await _pickImage();
+                              if (image != null) {
+                                setState(() => imageUrl = image);
+                              }
+                            },
+                            child: CircleAvatar(
+                              maxRadius: 60,
+                              backgroundColor: Colors.grey.shade300,
+                              backgroundImage: FileImage(File(imageUrl)),
+                              child: imageUrl.isNotEmpty
+                                  ? const SizedBox()
+                                  : const Icon(
+                                      Icons.person_outlined,
+                                      color: AppColors.black,
+                                    ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
                         TextFormField(
                           autovalidateMode: AutovalidateMode.onUserInteraction,
                           controller: nikController,
@@ -497,6 +528,49 @@ class _RegisterPageState extends State<RegisterPage> {
                           icon: const Icon(Icons.location_on_outlined, size: 18),
                           label: const Text('Pilih alamat dari Google Map'),
                         ),
+                        const SizedBox(height: 10),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Foto KTP : '),
+                                const SizedBox(height: 5),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    padding:
+                                        const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                                    textStyle: Theme.of(context).textTheme.labelMedium,
+                                  ),
+                                  onPressed: () async {
+                                    FocusManager.instance.primaryFocus?.unfocus();
+                                    var image = await _pickImage();
+                                    if (image != null) {
+                                      setState(() => imageid = image);
+                                    }
+                                  },
+                                  icon: const Icon(Icons.image_outlined, size: 18),
+                                  label: Text(imageid.isEmpty ? 'Pilih KTP' : 'Ubah KTP'),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              height: 150,
+                              width: 150,
+                              decoration: BoxDecoration(
+                                image: DecorationImage(
+                                  image: FileImage(
+                                    File(imageid),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
                       ],
                     ),
                   ),
@@ -524,7 +598,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           }
 
                           if (state is AuthFailure) {
-                            // Show error message
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text(state.message)),
                             );
@@ -568,7 +641,28 @@ class _RegisterPageState extends State<RegisterPage> {
                               final date = dateController.value.text;
                               // final password = passwordController.value.text;
 
+                              String? fixUserImage;
+                              String? fixUserImageId;
+                              if (imageUrl.isNotEmpty) {
+                                File imagefile = File(imageUrl); //convert Path to File
+                                Uint8List imagebytes =
+                                    await imagefile.readAsBytes(); //convert to bytes
+                                fixUserImage = base64.encode(imagebytes);
+                              } else {
+                                fixUserImage = 'file';
+                              }
+
+                              if (imageid.isNotEmpty) {
+                                File imagefile = File(imageid); //convert Path to File
+                                Uint8List imagebytes =
+                                    await imagefile.readAsBytes(); //convert to bytes
+                                fixUserImageId = base64.encode(imagebytes);
+                              } else {
+                                fixUserImageId = 'file';
+                              }
+
                               if (date.isEmpty) {
+                                // ignore: use_build_context_synchronously
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text(
@@ -606,8 +700,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                   fatherName: dadController.value.text,
                                   motherName: momController.value.text,
                                   placeId: '1',
-                                  ktp: 'file',
-                                  photo: 'file',
+                                  ktp: fixUserImageId,
+                                  photo: fixUserImage,
                                   // password: password,
                                 );
                                 // ignore: use_build_context_synchronously
@@ -625,8 +719,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                   fatherName: dadController.value.text,
                                   motherName: momController.value.text,
                                   placeId: '1',
-                                  ktp: 'file',
-                                  photo: 'file',
+                                  ktp: fixUserImageId,
+                                  photo: fixUserImage,
                                 );
                                 // ignore: use_build_context_synchronously
                                 context.read<AuthCubit>().editById(
@@ -656,6 +750,15 @@ class _RegisterPageState extends State<RegisterPage> {
         ),
       ),
     );
+  }
+
+  Future<String?>? _pickImage() async {
+    final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (pickedFile == null) {
+      return null;
+    } else {
+      return pickedFile.path;
+    }
   }
 
   toggleGender(int value) => setState(() => gender = value);
