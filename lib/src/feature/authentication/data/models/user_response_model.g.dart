@@ -24,6 +24,10 @@ UserResponseModel _$UserResponseModelFromJson(Map<String, dynamic> json) => User
       id: (json['id'] as num?)?.toInt(),
       createdAt: json['created_at'] as String?,
       updatedAt: json['updated_at'] as String?,
+      fatherName: json['father_name'] as String?,
+      motherName: json['mother_name'] as String?,
+      photo: json['photo'] as String?,
+      ktp: json['ktp'] as String?,
     );
 
 Map<String, dynamic> _$UserResponseModelToJson(UserResponseModel instance) => <String, dynamic>{
@@ -41,4 +45,8 @@ Map<String, dynamic> _$UserResponseModelToJson(UserResponseModel instance) => <S
       'updated_at': instance.updatedAt,
       'is_verified': instance.isVerified,
       'password': instance.password,
+      'father_name': instance.fatherName,
+      'mother_name': instance.motherName,
+      'photo': instance.photo,
+      'ktp': instance.ktp,
     };

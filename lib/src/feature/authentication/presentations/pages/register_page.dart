@@ -11,6 +11,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/core/styles/app_dimens.dart';
 import 'package:some_app/src/feature/authentication/data/models/edit_model.dart';
@@ -63,6 +64,9 @@ class _RegisterPageState extends State<RegisterPage> {
   String imageUrl = '';
   String imageid = '';
 
+  Uint8List? currentImage;
+  Uint8List? currentImageId;
+
   @override
   void initState() {
     if (widget.data != null) {
@@ -77,6 +81,16 @@ class _RegisterPageState extends State<RegisterPage> {
         double.parse(widget.data?.latitude ?? ''),
         double.parse(widget.data?.longitude ?? ''),
       );
+      if ((widget.data?.photo?.isNotEmpty ?? false) &&
+          widget.data?.photo != null &&
+          widget.data?.photo != 'file') {
+        currentImage = base64Decode(widget.data?.photo ?? '');
+      }
+      if ((widget.data?.ktp?.isNotEmpty ?? false) &&
+          widget.data?.ktp != null &&
+          widget.data?.ktp != 'file') {
+        currentImageId = base64Decode(widget.data?.ktp ?? '');
+      }
 
       // Split the date string by '-'
       List<String> dateParts = widget.data?.birthDate?.split('-') ?? [];
@@ -93,6 +107,23 @@ class _RegisterPageState extends State<RegisterPage> {
       isAdmin = true;
     }
     super.initState();
+  }
+
+  Future<String> base64ToFile(String base64Str, String fileName) async {
+    // Decode the base64 string to bytes
+    Uint8List bytes = base64Decode(base64Str);
+
+    // Get the temporary directory of the app
+    Directory tempDir = await getTemporaryDirectory();
+
+    // Create a file in the temporary directory with the provided file name
+    File file = File('${tempDir.path}/$fileName');
+
+    // Write the bytes to the file
+    await file.writeAsBytes(bytes);
+
+    // Return the file path
+    return file.path;
   }
 
   @override
@@ -168,8 +199,12 @@ class _RegisterPageState extends State<RegisterPage> {
                             child: CircleAvatar(
                               maxRadius: 60,
                               backgroundColor: Colors.grey.shade300,
-                              backgroundImage: FileImage(File(imageUrl)),
-                              child: imageUrl.isNotEmpty
+                              backgroundImage: imageUrl.isEmpty
+                                  ? currentImage != null
+                                      ? MemoryImage(currentImage!) as ImageProvider
+                                      : FileImage(File(imageUrl))
+                                  : FileImage(File(imageUrl)) as ImageProvider,
+                              child: imageUrl.isNotEmpty || currentImage != null
                                   ? const SizedBox()
                                   : const Icon(
                                       Icons.person_outlined,
@@ -187,7 +222,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
                             constraints: const BoxConstraints(minHeight: 40),
-                            hintText: 'NIK',
+                            labelText: 'NIK',
+                            labelStyle: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey.shade400),
                             prefixIcon: Icon(
                               MdiIcons.identifier,
                             ),
@@ -214,7 +253,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             isDense: true,
                             contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
                             constraints: const BoxConstraints(minHeight: 40),
-                            hintText: 'Nama',
+                            labelText: 'Nama',
+                            labelStyle: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey.shade500),
                             prefixIcon: Icon(
                               MdiIcons.accountOutline,
                             ),
@@ -387,6 +430,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                   EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
                               constraints: const BoxConstraints(minHeight: 40),
                               hintText: 'Tanggal lahir',
+                              labelText: 'Tanggal lahir',
+                              labelStyle: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: Colors.grey.shade500),
                               prefixIcon: Icon(
                                 MdiIcons.calendarAccountOutline,
                               ),
@@ -402,6 +450,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
                             constraints: const BoxConstraints(minHeight: 40),
                             hintText: 'Nama Ayah',
+                            labelText: 'Nama Ayah',
+                            labelStyle: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey.shade500),
                             prefixIcon: Icon(
                               MdiIcons.accountOutline,
                             ),
@@ -423,6 +476,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
                             constraints: const BoxConstraints(minHeight: 40),
                             hintText: 'Nama Ibu',
+                            labelText: 'Nama Ibu',
+                            labelStyle: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey.shade500),
                             prefixIcon: Icon(
                               MdiIcons.accountOutline,
                             ),
@@ -491,6 +549,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 15.h),
                             constraints: const BoxConstraints(minHeight: 40),
                             hintText: 'Alamat',
+                            labelText: 'Alamat',
+                            labelStyle: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey.shade500),
                           ),
                           textInputAction: TextInputAction.newline,
                           keyboardType: TextInputType.multiline,
@@ -554,7 +617,9 @@ class _RegisterPageState extends State<RegisterPage> {
                                     }
                                   },
                                   icon: const Icon(Icons.image_outlined, size: 18),
-                                  label: Text(imageid.isEmpty ? 'Pilih KTP' : 'Ubah KTP'),
+                                  label: Text(imageid.isEmpty || currentImageId == null
+                                      ? 'Pilih KTP'
+                                      : 'Ubah KTP'),
                                 ),
                               ],
                             ),
@@ -563,9 +628,12 @@ class _RegisterPageState extends State<RegisterPage> {
                               width: 150,
                               decoration: BoxDecoration(
                                 image: DecorationImage(
-                                  image: FileImage(
-                                    File(imageid),
-                                  ),
+                                  image: imageid.isEmpty
+                                      ? currentImageId != null
+                                          ? MemoryImage(currentImageId ?? Uint8List(0))
+                                              as ImageProvider
+                                          : FileImage(File(imageid))
+                                      : FileImage(File(imageid)) as ImageProvider,
                                 ),
                               ),
                             ),
@@ -590,21 +658,10 @@ class _RegisterPageState extends State<RegisterPage> {
                             context.goNamed('home');
                           }
 
-                          if (state is AuthSuccess) {
-                            // Navigate to the next screen
-                            context.goNamed('home', pathParameters: {
-                              'type': '200',
-                            });
-                          }
-
                           if (state is AuthFailure) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text(state.message)),
                             );
-                          }
-
-                          if (state is AuthEditSucceed) {
-                            context.goNamed('home', pathParameters: {'type': '200'});
                           }
 
                           if (state is AuthEditByIdSucceed) {
@@ -618,6 +675,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                 disability: state.model.disability,
                                 gender: state.model.gender,
                                 isVerified: state.model.isVerified,
+                                fatherName: state.model.fatherName,
+                                motherName: state.model.motherName,
+                                ktp: state.model.ktp,
+                                photo: state.model.photo,
                                 latitude: state.model.latitude,
                                 longitude: state.model.longitude,
                                 createdAt: state.model.createdAt,
@@ -649,7 +710,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                     await imagefile.readAsBytes(); //convert to bytes
                                 fixUserImage = base64.encode(imagebytes);
                               } else {
-                                fixUserImage = 'file';
+                                if (currentImage != null) {
+                                  fixUserImage = base64.encode(currentImage!);
+                                } else {
+                                  fixUserImage = 'file';
+                                }
                               }
 
                               if (imageid.isNotEmpty) {
@@ -658,7 +723,11 @@ class _RegisterPageState extends State<RegisterPage> {
                                     await imagefile.readAsBytes(); //convert to bytes
                                 fixUserImageId = base64.encode(imagebytes);
                               } else {
-                                fixUserImageId = 'file';
+                                if (currentImageId != null) {
+                                  fixUserImageId = base64.encode(currentImageId!);
+                                } else {
+                                  fixUserImageId = 'file';
+                                }
                               }
 
                               if (date.isEmpty) {

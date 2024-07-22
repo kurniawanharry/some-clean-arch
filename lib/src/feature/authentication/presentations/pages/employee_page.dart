@@ -107,6 +107,11 @@ class _EmployeePageState extends State<EmployeePage> {
                             contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
                             constraints: const BoxConstraints(minHeight: 40),
                             hintText: 'Nama',
+                            labelText: 'Nama',
+                            labelStyle: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey.shade500),
                             prefixIcon: Icon(
                               MdiIcons.accountOutline,
                             ),
@@ -128,6 +133,11 @@ class _EmployeePageState extends State<EmployeePage> {
                             contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
                             constraints: const BoxConstraints(minHeight: 40),
                             hintText: 'Username',
+                            labelText: 'Username',
+                            labelStyle: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: Colors.grey.shade500),
                             prefixIcon: Icon(
                               MdiIcons.accountOutline,
                             ),
@@ -152,6 +162,11 @@ class _EmployeePageState extends State<EmployeePage> {
                                   EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
                               constraints: const BoxConstraints(minHeight: 40),
                               hintText: 'Password',
+                              labelText: 'Password',
+                              labelStyle: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: Colors.grey.shade500),
                               prefixIcon: Icon(
                                 MdiIcons.lockOutline,
                               ),
@@ -185,6 +200,11 @@ class _EmployeePageState extends State<EmployeePage> {
                                   EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
                               constraints: const BoxConstraints(minHeight: 40),
                               hintText: 'Confirm Password',
+                              labelText: 'Confirm Password',
+                              labelStyle: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(color: Colors.grey.shade500),
                               prefixIcon: Icon(
                                 MdiIcons.lockOutline,
                               ),

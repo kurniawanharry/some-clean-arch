@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -7,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
+import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import 'package:some_app/src/core/styles/app_colors.dart';
 import 'package:some_app/src/core/styles/app_dimens.dart';
 import 'package:some_app/src/core/util/injections.dart';
@@ -125,32 +125,48 @@ class UserPageState extends State<UserPage> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          if (isAdmin)
-            Text(
-              'Admin',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppColors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-            )
-          else
-            BlocConsumer<EmployeeCubit, EmployeeState>(
-              listener: (context, state) {},
-              builder: (context, state) {
-                if (state is HomeEmployeeSuccess) {
-                  return Text(
-                    state.user.name ?? '',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: AppColors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                  );
-                }
-                return const SizedBox();
-              },
-            ),
+          Row(
+            children: [
+              if (isAdmin)
+                Text(
+                  'Admin',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                )
+              else
+                BlocConsumer<EmployeeCubit, EmployeeState>(
+                  listener: (context, state) {},
+                  builder: (context, state) {
+                    if (state is HomeEmployeeSuccess) {
+                      return Text(
+                        state.user.name ?? '',
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                              color: AppColors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      );
+                    }
+                    return const SizedBox();
+                  },
+                ),
+              const SizedBox(width: 5),
+              GestureDetector(
+                onTap: () {
+                  if (isAdmin) {
+                    context.read<HomeCubit>().fetchUsers(isAdmin);
+                    context.read<EmployeeCubit>().fetchEmpolyee();
+                  } else {
+                    context.read<HomeCubit>().fetchUsers(isAdmin);
+                  }
+                },
+                child: Icon(MdiIcons.refresh, size: 20, color: AppColors.white),
+              ),
+            ],
+          ),
           Row(
             children: [
               TextButton.icon(
@@ -259,7 +275,8 @@ class UserPageState extends State<UserPage> {
                                     if (result == 'Delete') {
                                     } else {
                                       var result = await context.push(
-                                        '/employee/details/${Uri.decodeComponent(json.encode(user))}&${isAdmin ? '100' : '200'}',
+                                        '/employee/details/${isAdmin ? '100' : '200'}',
+                                        extra: user,
                                       ) as EmployeeModel?;
 
                                       if (result != null) {
@@ -548,7 +565,8 @@ class UserPageState extends State<UserPage> {
                           );
                     } else {
                       var result = await context.push(
-                        '/register/details/${Uri.decodeComponent(json.encode(user))}&${isAdmin ? '100' : '200'}',
+                        '/register/details/${isAdmin ? '100' : '200'}',
+                        extra: user,
                       ) as UserModel?;
 
                       if (result != null) {

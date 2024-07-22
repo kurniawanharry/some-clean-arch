@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:go_router/go_router.dart';
 import 'package:some_app/src/feature/authentication/data/models/employee_model.dart';
 import 'package:some_app/src/feature/authentication/data/models/user_model.dart';
@@ -33,20 +31,13 @@ class AppRouter {
         builder: (context, state) => const RegisterPage(),
         routes: [
           GoRoute(
-            path: 'details/:data&:type',
+            path: 'details/:type',
             builder: (context, state) {
-              Map<String, dynamic>? data;
-              if (state.pathParameters['data'] != null) {
-                var dat = state.pathParameters['data'];
-                final jsonData = Uri.decodeComponent(dat ?? '');
-                if (jsonData != "null") {
-                  data = json.decode(jsonData) as Map<String, dynamic>;
-                }
-              }
+              final data = state.extra as UserModel?;
 
               final type = state.pathParameters['type'];
               return RegisterPage(
-                data: UserModel.fromJson(data ?? {}),
+                data: data,
                 type: int.tryParse(type ?? '100'),
               );
             },
@@ -68,20 +59,13 @@ class AppRouter {
         builder: (context, state) => const EmployeePage(),
         routes: [
           GoRoute(
-            path: 'details/:data&:type',
+            path: 'details/:type',
             builder: (context, state) {
-              Map<String, dynamic>? data;
-              if (state.pathParameters['data'] != null) {
-                var dat = state.pathParameters['data'];
-                final jsonData = Uri.decodeComponent(dat ?? '');
-                if (jsonData != "null") {
-                  data = json.decode(jsonData) as Map<String, dynamic>;
-                }
-              }
+              final data = state.extra as EmployeeModel?;
 
               final type = state.pathParameters['type'];
               return EmployeePage(
-                data: EmployeeModel.fromJson(data ?? {}),
+                data: data,
                 type: int.tryParse(type ?? '100'),
               );
             },

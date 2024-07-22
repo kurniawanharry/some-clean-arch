@@ -17,6 +17,10 @@ class UserResponseModel {
   String? createdAt;
   String? updatedAt;
   String? password;
+  String? fatherName;
+  String? motherName;
+  String? photo;
+  String? ktp;
 
   UserResponseModel({
     this.nik,
@@ -33,6 +37,10 @@ class UserResponseModel {
     this.id,
     this.createdAt,
     this.updatedAt,
+    this.fatherName,
+    this.motherName,
+    this.photo,
+    this.ktp,
   });
 
   /// factory.
