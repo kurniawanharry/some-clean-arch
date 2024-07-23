@@ -142,6 +142,9 @@ class DioNetwork {
 
     return BaseOptions(
         baseUrl: url,
+        connectTimeout: const Duration(seconds: 10),
+        sendTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
         validateStatus: (s) {
           return s! < 300;
         },
