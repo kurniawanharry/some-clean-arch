@@ -13,6 +13,8 @@ import 'package:some_app/src/feature/home/presentations/cubit/home_cubit.dart';
 import 'package:some_app/src/feature/home/presentations/pages/google_map_home_page.dart';
 import 'dart:ui' as ui;
 
+import 'package:some_app/src/shared/data/data_source/image_cache.dart';
+
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -339,12 +341,12 @@ Future<Uint8List> createCustomMarkerBitmap(String text, String imagePath, bool i
 
   // Download and draw the image from the URL using Dio
   // Load and draw the image from assets
-  Uint8List? bytes;
+// Load the image
+  Uint8List bytes;
   if (imagePath.isEmpty || imagePath == 'file') {
-    final ByteData data = await rootBundle.load('assets/images/user_icon.png');
-    bytes = data.buffer.asUint8List();
+    bytes = await ImageCacheCustom.loadLocalImage('assets/images/user_icon.png');
   } else {
-    bytes = base64Decode(imagePath);
+    bytes = await ImageCacheCustom.getImage(imagePath);
   }
 
   final ui.Codec codec =

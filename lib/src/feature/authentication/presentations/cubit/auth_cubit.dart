@@ -1,6 +1,7 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:some_app/src/core/util/injections.dart';
 import 'package:some_app/src/core/util/usescases/usecases.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
 import 'package:some_app/src/feature/authentication/data/models/edit_model.dart';
@@ -17,6 +18,7 @@ import 'package:some_app/src/feature/authentication/domain/usecases/sign_in_usec
 import 'package:some_app/src/feature/authentication/domain/usecases/logout_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_employee_usercase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_up_usecase.dart';
+import 'package:some_app/src/shared/data/data_source/imgur.dart';
 
 part 'auth_state.dart';
 
@@ -63,6 +65,16 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> signUp(bool isAdmin, SignUpModel params) async {
     try {
       emit(AuthLoading());
+      if (params.photo != 'file') {
+        var image = await getIt<ImgurClient>().fetchImgur(params.photo ?? '');
+        params.photo = image?.data?.first ?? '';
+      }
+
+      if (params.ktp != 'file') {
+        var image = await getIt<ImgurClient>().fetchImgur(params.ktp ?? '');
+        params.ktp = image?.data?.first ?? '';
+      }
+
       final result = await signUpUseCase.call(SignUpParams(isAdmin: isAdmin, model: params));
       result.fold((l) {
         emit(AuthFailure(l.errorMessage));
@@ -120,6 +132,17 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> editById(int id, EditModel params) async {
     try {
       emit(AuthLoading());
+
+      if (params.photo != 'file' && !params.photo!.startsWith('https')) {
+        var image = await getIt<ImgurClient>().fetchImgur(params.photo ?? '');
+        params.photo = image?.data?.first ?? '';
+      }
+
+      if (params.ktp != 'file' && !params.ktp!.startsWith('https')) {
+        var image = await getIt<ImgurClient>().fetchImgur(params.ktp ?? '');
+        params.ktp = image?.data?.first ?? '';
+      }
+
       final result = await editByIdUseCase.call(EditIdParams(firstValue: id, secondValue: params));
       result.fold((l) {
         emit(AuthFailure(l.errorMessage));

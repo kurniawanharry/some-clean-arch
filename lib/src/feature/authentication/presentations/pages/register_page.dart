@@ -21,6 +21,7 @@ import 'package:some_app/src/feature/authentication/data/models/user_model.dart'
 import 'package:some_app/src/feature/authentication/presentations/cubit/auth_cubit.dart';
 import 'package:location/location.dart' as loc;
 import 'package:some_app/src/feature/home/presentations/pages/home_page.dart';
+import 'package:path/path.dart' as path;
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({
@@ -65,8 +66,8 @@ class _RegisterPageState extends State<RegisterPage> {
   String imageUrl = '';
   String imageid = '';
 
-  Uint8List? currentImage;
-  Uint8List? currentImageId;
+  String? currentImageUrl;
+  String? currentImageIdUrl;
 
   @override
   void initState() {
@@ -85,12 +86,12 @@ class _RegisterPageState extends State<RegisterPage> {
       if ((widget.data?.photo?.isNotEmpty ?? false) &&
           widget.data?.photo != null &&
           widget.data?.photo != 'file') {
-        currentImage = base64Decode(widget.data?.photo ?? '');
+        currentImageUrl = widget.data?.photo ?? '';
       }
       if ((widget.data?.ktp?.isNotEmpty ?? false) &&
           widget.data?.ktp != null &&
           widget.data?.ktp != 'file') {
-        currentImageId = base64Decode(widget.data?.ktp ?? '');
+        currentImageIdUrl = widget.data?.ktp ?? '';
       }
 
       // Split the date string by '-'
@@ -195,18 +196,20 @@ class _RegisterPageState extends State<RegisterPage> {
                               var file = await _pickImage();
                               if (file != null) {
                                 var image = await _compressImage(file);
-                                setState(() => imageUrl = image?.path ?? '');
+                                if (image != null) {
+                                  setState(() => imageUrl = image.path);
+                                }
                               }
                             },
                             child: CircleAvatar(
                               maxRadius: 60,
                               backgroundColor: Colors.grey.shade300,
                               backgroundImage: imageUrl.isEmpty
-                                  ? currentImage != null
-                                      ? MemoryImage(currentImage!) as ImageProvider
+                                  ? currentImageUrl != null
+                                      ? NetworkImage(currentImageUrl!) as ImageProvider
                                       : FileImage(File(imageUrl))
                                   : FileImage(File(imageUrl)) as ImageProvider,
-                              child: imageUrl.isNotEmpty || currentImage != null
+                              child: imageUrl.isNotEmpty || currentImageUrl != null
                                   ? const SizedBox()
                                   : const Icon(
                                       Icons.person_outlined,
@@ -616,11 +619,13 @@ class _RegisterPageState extends State<RegisterPage> {
                                     var file = await _pickImage();
                                     if (file != null) {
                                       var image = await _compressImage(file);
-                                      setState(() => imageid = image?.path ?? '');
+                                      if (image != null) {
+                                        setState(() => imageid = image.path);
+                                      }
                                     }
                                   },
                                   icon: const Icon(Icons.image_outlined, size: 18),
-                                  label: Text(imageid.isEmpty || currentImageId == null
+                                  label: Text(imageid.isEmpty || currentImageIdUrl == null
                                       ? 'Pilih KTP'
                                       : 'Ubah KTP'),
                                 ),
@@ -632,9 +637,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               decoration: BoxDecoration(
                                 image: DecorationImage(
                                   image: imageid.isEmpty
-                                      ? currentImageId != null
-                                          ? MemoryImage(currentImageId ?? Uint8List(0))
-                                              as ImageProvider
+                                      ? currentImageIdUrl != null
+                                          ? NetworkImage(currentImageIdUrl ?? '') as ImageProvider
                                           : FileImage(File(imageid))
                                       : FileImage(File(imageid)) as ImageProvider,
                                 ),
@@ -721,8 +725,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                     await imagefile.readAsBytes(); //convert to bytes
                                 fixUserImage = base64.encode(imagebytes);
                               } else {
-                                if (currentImage != null) {
-                                  fixUserImage = base64.encode(currentImage!);
+                                if (currentImageUrl != null) {
+                                  fixUserImage = currentImageUrl;
                                 } else {
                                   fixUserImage = 'file';
                                 }
@@ -734,8 +738,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                     await imagefile.readAsBytes(); //convert to bytes
                                 fixUserImageId = base64.encode(imagebytes);
                               } else {
-                                if (currentImageId != null) {
-                                  fixUserImageId = base64.encode(currentImageId!);
+                                if (currentImageIdUrl != null) {
+                                  fixUserImageId = currentImageIdUrl;
                                 } else {
                                   fixUserImageId = 'file';
                                 }
@@ -842,12 +846,19 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<File?> _compressImage(File file) async {
+    final tempDir = await getTemporaryDirectory();
+    final targetPath = path.join(tempDir.path, 'compressed_${path.basename(file.path)}');
+
     final compressedImage = await FlutterImageCompress.compressAndGetFile(
       file.absolute.path,
-      '${file.absolute.parent.path}/compressed_${file.uri.pathSegments.last}',
+      targetPath,
       quality: 70,
+      format: file.path.endsWith('.png') ? CompressFormat.png : CompressFormat.jpeg,
     );
-    return File(compressedImage!.path);
+    if (compressedImage != null) {
+      return File(compressedImage.path);
+    }
+    return null;
   }
 
   toggleGender(int value) => setState(() => gender = value);

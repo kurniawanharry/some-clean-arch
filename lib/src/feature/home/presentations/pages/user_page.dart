@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:typed_data';
-
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -664,16 +661,16 @@ class UserPageState extends State<UserPage> {
                       icon: BitmapDescriptor.fromBytes(markerIcon),
                     );
 
-                    Uint8List? bytes;
+                    String? urlPhoto;
                     if ((user.photo?.isEmpty ?? true) || user.photo == 'file') {
                     } else {
-                      bytes = base64Decode(user.photo ?? '');
+                      urlPhoto = user.photo ?? '';
                     }
 
-                    Uint8List? bytesId;
+                    String? urlId;
                     if ((user.ktp?.isEmpty ?? true) || user.ktp == 'file') {
                     } else {
-                      bytesId = base64Decode(user.photo ?? '');
+                      urlId = user.ktp ?? '';
                     }
                     return await showModalBottomSheet(
                       // ignore: use_build_context_synchronously
@@ -703,15 +700,15 @@ class UserPageState extends State<UserPage> {
                                       const SizedBox(height: 5),
                                       ListTile(
                                         title: const Text('Foto Profile'),
-                                        trailing: bytes != null
-                                            ? Image.memory(bytes)
+                                        trailing: urlPhoto != null
+                                            ? Image.network(urlPhoto)
                                             : const Text('Gambar Belum Ada'),
                                       ),
                                       const SizedBox(height: 5),
                                       ListTile(
                                         title: const Text('KTP'),
-                                        trailing: bytesId != null
-                                            ? Image.memory(bytesId)
+                                        trailing: urlId != null
+                                            ? Image.network(urlId)
                                             : const Text('Gambar Belum Ada'),
                                         tileColor: AppColors.lightGray,
                                       ),
