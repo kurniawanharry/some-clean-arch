@@ -129,7 +129,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> editById(int id, EditModel params) async {
+  Future<void> editById(bool isAdmin, int id, EditModel params) async {
     try {
       emit(AuthLoading());
 
@@ -143,7 +143,8 @@ class AuthCubit extends Cubit<AuthState> {
         params.ktp = image?.data?.first ?? '';
       }
 
-      final result = await editByIdUseCase.call(EditIdParams(firstValue: id, secondValue: params));
+      final result = await editByIdUseCase
+          .call(EditIdParams(isAdmin: isAdmin, firstValue: id, secondValue: params));
       result.fold((l) {
         emit(AuthFailure(l.errorMessage));
       }, (r) async {

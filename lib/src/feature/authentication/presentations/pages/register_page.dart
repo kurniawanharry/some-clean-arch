@@ -808,6 +808,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                 );
                                 // ignore: use_build_context_synchronously
                                 context.read<AuthCubit>().editById(
+                                      isAdmin,
                                       widget.data!.id!,
                                       request,
                                     );

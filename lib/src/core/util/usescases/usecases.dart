@@ -18,10 +18,11 @@ class Params {
 }
 
 class EditIdParams {
+  final bool isAdmin;
   final int firstValue;
   final EditModel secondValue;
 
-  EditIdParams({required this.firstValue, required this.secondValue});
+  EditIdParams({required this.isAdmin, required this.firstValue, required this.secondValue});
 }
 
 class EditIdEmployeeParams {

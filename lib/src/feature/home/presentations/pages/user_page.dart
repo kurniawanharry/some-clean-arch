@@ -612,9 +612,7 @@ class UserPageState extends State<UserPage> {
 
                         if (result != null) {
                           setState(() {
-                            context
-                                .read<HomeCubit>()
-                                .updateUser(user.id!, result, isAdmin: isAdmin);
+                            context.read<HomeCubit>().updateUser(user.id!, result);
                           });
                         }
                       }
@@ -635,13 +633,14 @@ class UserPageState extends State<UserPage> {
                           title: Text('Edit'),
                         ),
                       ),
-                      const PopupMenuItem<String>(
-                        value: 'Delete',
-                        child: ListTile(
-                          leading: Icon(Icons.delete_outline),
-                          title: Text('Hapus'),
+                      if (isAdmin)
+                        const PopupMenuItem<String>(
+                          value: 'Delete',
+                          child: ListTile(
+                            leading: Icon(Icons.delete_outline),
+                            title: Text('Hapus'),
+                          ),
                         ),
-                      ),
                     ],
                   ),
                   onTap: () async {

@@ -16,7 +16,7 @@ abstract class AbstractAuthRepository {
   Future<Either<Failure, EmployeeModel>> deleteEmployee(int id);
   Future<Either<Failure, TokenModel>> refreshToken();
   Future<Either<Failure, UserResponseModel>> edit(EditModel params);
-  Future<Either<Failure, UserResponseModel>> editById(int id, EditModel params);
+  Future<Either<Failure, UserResponseModel>> editById(bool isAdmin, int id, EditModel params);
   Future<Either<Failure, UserModel>> delete(int params);
   Future<Either<Failure, dynamic>> logout();
 }

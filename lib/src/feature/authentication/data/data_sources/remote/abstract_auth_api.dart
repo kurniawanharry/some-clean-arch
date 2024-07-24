@@ -20,7 +20,7 @@ abstract class AbstractAuthApi {
 
   Future<UserResponseModel> edit(EditModel params);
 
-  Future<UserResponseModel> editById(int id, EditModel params);
+  Future<UserResponseModel> editById(bool isAdmin, int id, EditModel params);
 
   Future<TokenModel> refreshToken();
 

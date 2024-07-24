@@ -145,16 +145,11 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  updateUser(int id, UserModel model, {bool isAdmin = false}) {
-    if (isAdmin) {
-      var index = allUsers.indexWhere((element) => element.id == id);
+  updateUser(int id, UserModel model) {
+    var index = allUsers.indexWhere((element) => element.id == id);
 
-      allUsers[index] = model;
-      emit(HomeUsersSuccess(allUsers));
-    }
-    //  else {
-    //   emit(HomeUserSuccess(model));
-    // }
+    allUsers[index] = model;
+    emit(HomeUsersSuccess(allUsers));
   }
 
   filterMap(bool verif, bool nonVerif) {

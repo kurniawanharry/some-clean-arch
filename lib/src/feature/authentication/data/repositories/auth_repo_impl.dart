@@ -79,9 +79,10 @@ class AuthRepositoryImpl extends AbstractAuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserResponseModel>> editById(int id, EditModel params) async {
+  Future<Either<Failure, UserResponseModel>> editById(
+      bool isAdmin, int id, EditModel params) async {
     try {
-      final result = await articlesApi.editById(id, params);
+      final result = await articlesApi.editById(isAdmin, id, params);
       return Right(result);
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, e.statusCode));

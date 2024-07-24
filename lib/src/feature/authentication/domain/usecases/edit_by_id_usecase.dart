@@ -11,7 +11,7 @@ class EditByIdUseCase extends UseCase<UserResponseModel, EditIdParams> {
 
   @override
   Future<Either<Failure, UserResponseModel>> call(params) async {
-    final result = await repository.editById(params.firstValue, params.secondValue);
+    final result = await repository.editById(params.isAdmin, params.firstValue, params.secondValue);
     return result.fold((l) {
       return Left(l);
     }, (r) async {

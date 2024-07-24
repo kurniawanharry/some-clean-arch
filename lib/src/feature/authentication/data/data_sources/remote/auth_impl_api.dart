@@ -116,10 +116,10 @@ class AuthImplApi extends AbstractAuthApi {
   }
 
   @override
-  Future<UserResponseModel> editById(int id, EditModel params) async {
+  Future<UserResponseModel> editById(bool isAdmin, int id, EditModel params) async {
     try {
       final result = await dio.post(
-        '${Env.urlApiAdmin}/disabled/update/$id',
+        '${isAdmin ? Env.urlApiAdmin : Env.urlApiEmployee}/disabled/update/$id',
         data: jsonEncode(params.toJson()),
       );
       if (result.data == null) {
