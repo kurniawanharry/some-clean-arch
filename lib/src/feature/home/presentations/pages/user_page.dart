@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -661,6 +663,18 @@ class UserPageState extends State<UserPage> {
                       // ignore: deprecated_member_use
                       icon: BitmapDescriptor.fromBytes(markerIcon),
                     );
+
+                    Uint8List? bytes;
+                    if ((user.photo?.isEmpty ?? true) || user.photo == 'file') {
+                    } else {
+                      bytes = base64Decode(user.photo ?? '');
+                    }
+
+                    Uint8List? bytesId;
+                    if ((user.ktp?.isEmpty ?? true) || user.ktp == 'file') {
+                    } else {
+                      bytesId = base64Decode(user.photo ?? '');
+                    }
                     return await showModalBottomSheet(
                       // ignore: use_build_context_synchronously
                       context: context,
@@ -686,6 +700,21 @@ class UserPageState extends State<UserPage> {
                                 child: Material(
                                   child: ListView(
                                     children: [
+                                      const SizedBox(height: 5),
+                                      ListTile(
+                                        title: const Text('Foto Profile'),
+                                        trailing: bytes != null
+                                            ? Image.memory(bytes)
+                                            : const Text('Gambar Belum Ada'),
+                                      ),
+                                      const SizedBox(height: 5),
+                                      ListTile(
+                                        title: const Text('KTP'),
+                                        trailing: bytesId != null
+                                            ? Image.memory(bytesId)
+                                            : const Text('Gambar Belum Ada'),
+                                        tileColor: AppColors.lightGray,
+                                      ),
                                       ListTile(
                                         title: const Text('NIK'),
                                         subtitle: Text('${user.nik}'),
