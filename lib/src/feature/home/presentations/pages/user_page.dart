@@ -174,7 +174,14 @@ class UserPageState extends State<UserPage> {
                   foregroundColor: AppColors.secondary,
                   backgroundColor: AppColors.main,
                 ),
-                onPressed: () => context.push('/register/create/${isAdmin ? '100' : '200'}'),
+                onPressed: () =>
+                    context.push('/register/create/${isAdmin ? '100' : '200'}').then((value) {
+                  if (value is bool) {
+                    if (value) {
+                      _cubit.fetchUsers(isAdmin);
+                    }
+                  }
+                }),
                 icon: const Icon(Icons.add),
                 label: const Text('User'),
               ),
@@ -185,7 +192,15 @@ class UserPageState extends State<UserPage> {
                     foregroundColor: AppColors.secondary,
                     backgroundColor: AppColors.main,
                   ),
-                  onPressed: () => context.pushNamed('employee'),
+                  onPressed: () => context.pushNamed('employee').then(
+                    (value) {
+                      if (value is bool) {
+                        if (value) {
+                          _employeeCubit.fetchEmpolyee();
+                        }
+                      }
+                    },
+                  ),
                   icon: const Icon(Icons.add),
                   label: const Text('Karyawan'),
                 ),
@@ -198,48 +213,52 @@ class UserPageState extends State<UserPage> {
   }
 
   Widget _employee(BuildContext context) {
-    return BlocBuilder<EmployeeCubit, EmployeeState>(
-      bloc: _employeeCubit,
-      builder: (context, state) {
-        if (state is HomeLoading) {
-          return const Center(
-            child: CircularProgressIndicator(
-              color: AppColors.white,
+    return BlocListener<EmployeeCubit, EmployeeState>(
+      listener: (context, state) {
+        if (state is HomeEmployeeDeleted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Karyawan Berhasil Dihapus',
+              ),
             ),
           );
         }
-        return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.white,
-          ),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                child: TextField(
-                  keyboardType: TextInputType.name,
-                  textInputAction: TextInputAction.search,
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    hintText: 'Cari Karyawan',
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 15,
+      },
+      child: BlocBuilder<EmployeeCubit, EmployeeState>(
+        bloc: _employeeCubit,
+        builder: (context, state) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: AppColors.white,
+            ),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                  child: TextField(
+                    keyboardType: TextInputType.name,
+                    textInputAction: TextInputAction.search,
+                    decoration: const InputDecoration(
+                      isDense: true,
+                      hintText: 'Cari Karyawan',
+                      contentPadding: EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 15,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        size: 25,
+                      ),
                     ),
-                    prefixIcon: Icon(
-                      Icons.search,
-                      size: 25,
-                    ),
+                    onChanged: (value) => _employeeCubit.searchUsers(value),
                   ),
-                  onChanged: (value) => _employeeCubit.searchUsers(value),
                 ),
-              ),
-              if (state is HomeEmployeesSuccess)
-                if (state.isLoading)
+                if (state is HomeEmployeesLoading)
                   const Center(
                     child: CircularProgressIndicator(),
                   )
-                else if (state.isFailed ?? true)
+                else if (state is HomeEmployeesFailed)
                   Center(
                     child: Column(
                       children: [
@@ -252,7 +271,7 @@ class UserPageState extends State<UserPage> {
                       ],
                     ),
                   )
-                else
+                else if (state is HomeEmployeesSuccess)
                   Expanded(
                     child: RefreshIndicator(
                       onRefresh: () => context.read<EmployeeCubit>().fetchEmpolyee(),
@@ -263,74 +282,95 @@ class UserPageState extends State<UserPage> {
                         itemBuilder: (context, index) {
                           var user = state.users[index];
 
-                          return BlocBuilder<EmployeeCubit, EmployeeState>(
-                              builder: (context, state) {
-                            return Material(
-                              child: ListTile(
-                                title: Text('${user.name}'),
-                                tileColor: AppColors.white,
-                                trailing: PopupMenuButton<String>(
-                                  icon: const Icon(Icons.more_vert_outlined),
-                                  onSelected: (String result) async {
-                                    if (result == 'Delete') {
-                                    } else {
-                                      var result = await context.push(
-                                        '/employee/details/${isAdmin ? '100' : '200'}',
-                                        extra: user,
-                                      ) as EmployeeModel?;
+                          return Material(
+                            child: ListTile(
+                              title: Text('${user.name}'),
+                              tileColor: AppColors.white,
+                              trailing: PopupMenuButton<String>(
+                                icon: const Icon(Icons.more_vert_outlined),
+                                onSelected: (String result) async {
+                                  if (result == 'Delete') {
+                                    context.read<EmployeeCubit>().deleteUser(user.id!, user);
+                                  } else {
+                                    var result = await context.push(
+                                      '/employee/details/${isAdmin ? '100' : '200'}',
+                                      extra: user,
+                                    ) as EmployeeModel?;
 
-                                      if (result != null) {
-                                        setState(() {
-                                          context
-                                              .read<EmployeeCubit>()
-                                              .updateUser(user.id!, result, isAdmin: isAdmin);
-                                        });
-                                      }
+                                    if (result != null) {
+                                      setState(() {
+                                        context
+                                            .read<EmployeeCubit>()
+                                            .updateUser(user.id!, result, isAdmin: isAdmin);
+                                      });
                                     }
-                                  },
-                                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                                    const PopupMenuItem<String>(
-                                      value: 'Edit',
-                                      child: ListTile(
-                                        leading: Icon(Icons.edit_outlined),
-                                        title: Text('Edit'),
-                                      ),
+                                  }
+                                },
+                                itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                                  const PopupMenuItem<String>(
+                                    value: 'Edit',
+                                    child: ListTile(
+                                      leading: Icon(Icons.edit_outlined),
+                                      title: Text('Edit'),
                                     ),
-                                    const PopupMenuItem<String>(
-                                      value: 'Delete',
-                                      child: ListTile(
-                                        leading: Icon(Icons.delete_outline),
-                                        title: Text('Hapus'),
-                                      ),
+                                  ),
+                                  const PopupMenuItem<String>(
+                                    value: 'Delete',
+                                    child: ListTile(
+                                      leading: Icon(Icons.delete_outline),
+                                      title: Text('Hapus'),
                                     ),
-                                  ],
-                                ),
-                                onTap: null,
+                                  ),
+                                ],
                               ),
-                            );
-                          });
+                              onTap: null,
+                            ),
+                          );
                         },
                       ),
                     ),
                   ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
   Widget _user(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
+    return BlocListener<HomeCubit, HomeState>(
+      listener: (context, state) {
+        if (state is HomeFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
+        if (state is VerifySuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                state.value.isVerified ?? false
+                    ? 'User Berhasil Diverifikasi'
+                    : 'Verifikasi User Berhasil Dibatalkan',
+              ),
+            ),
+          );
+        }
+
+        if (state is HomeDeleted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'User Berhasil Dihapus',
+              ),
+            ),
+          );
+        }
+      },
+      child: BlocBuilder<HomeCubit, HomeState>(
         bloc: _cubit,
         builder: (context, state) {
-          if (state is HomeLoading) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: AppColors.white,
-              ),
-            );
-          }
           return DefaultTabController(
             length: 2,
             child: Container(
@@ -498,29 +538,30 @@ class UserPageState extends State<UserPage> {
                       ),
                     ],
                   ),
-                  if (state is HomeUsersSuccess) ...[
-                    Expanded(
-                      child: TabBarView(
-                        children: [
-                          _users(state, true),
-                          _users(state, false),
-                        ],
-                      ),
+                  Expanded(
+                    child: TabBarView(
+                      children: [
+                        _users(state, true),
+                        _users(state, false),
+                      ],
                     ),
-                  ]
+                  ),
                 ],
               ),
             ),
           );
-        });
+        },
+      ),
+    );
   }
 
-  Widget _users(HomeUsersSuccess state, bool isVerified) {
-    if (state.isLoading) {
+  Widget _users(HomeState state, bool isVerified) {
+    if (state is HomeLoading) {
       return const Center(
         child: CircularProgressIndicator(),
       );
-    } else if (state.isFailed ?? false) {
+    }
+    if (state is HomeFailure) {
       return Center(
         child: Column(
           children: [
@@ -534,169 +575,174 @@ class UserPageState extends State<UserPage> {
         ),
       );
     }
-    return RefreshIndicator(
-      onRefresh: () => context.read<HomeCubit>().fetchUsers(isAdmin),
-      child: ListView.separated(
-        separatorBuilder: (context, index) => const Divider(height: 0),
-        itemCount: state.users.where((element) => element.isVerified == isVerified).length,
-        padding: const EdgeInsets.only(bottom: 100),
-        itemBuilder: (context, index) {
-          var user =
-              state.users.where((element) => element.isVerified == isVerified).toList()[index];
+    if (state is HomeUsersSuccess) {
+      return RefreshIndicator(
+        onRefresh: () => context.read<HomeCubit>().fetchUsers(isAdmin),
+        child: ListView.separated(
+          separatorBuilder: (context, index) => const Divider(height: 0),
+          itemCount: state.users.where((element) => element.isVerified == isVerified).length,
+          padding: const EdgeInsets.only(bottom: 100),
+          itemBuilder: (context, index) {
+            var user =
+                state.users.where((element) => element.isVerified == isVerified).toList()[index];
 
-          return BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
-            return Material(
-              child: ListTile(
-                title: Text('${user.name}'),
-                subtitle: Text('${user.nik}'),
-                tileColor: AppColors.white,
-                trailing: PopupMenuButton<String>(
-                  icon: const Icon(Icons.more_vert_outlined),
-                  onSelected: (String result) async {
-                    if (result == 'Verifikasi') {
-                      context.read<HomeCubit>().toggleVerification(
-                            user.id!,
-                            !isVerified,
-                          );
-                    } else if (result == 'Delete') {
-                      context.read<HomeCubit>().deleteUser(
-                            user.id!,
-                            user,
-                          );
-                    } else {
-                      var result = await context.push(
-                        '/register/details/${isAdmin ? '100' : '200'}',
-                        extra: user,
-                      ) as UserModel?;
+            return BlocBuilder<HomeCubit, HomeState>(builder: (context, state) {
+              return Material(
+                child: ListTile(
+                  title: Text('${user.name}'),
+                  subtitle: Text('${user.nik}'),
+                  tileColor: AppColors.white,
+                  trailing: PopupMenuButton<String>(
+                    icon: const Icon(Icons.more_vert_outlined),
+                    onSelected: (String result) async {
+                      if (result == 'Verifikasi') {
+                        context.read<HomeCubit>().toggleVerification(
+                              user.id!,
+                              !isVerified,
+                            );
+                      } else if (result == 'Delete') {
+                        context.read<HomeCubit>().deleteUser(
+                              user.id!,
+                              user,
+                            );
+                      } else {
+                        var result = await context.push(
+                          '/register/details/${isAdmin ? '100' : '200'}',
+                          extra: user,
+                        ) as UserModel?;
 
-                      if (result != null) {
-                        setState(() {
-                          context.read<HomeCubit>().updateUser(user.id!, result, isAdmin: isAdmin);
-                        });
+                        if (result != null) {
+                          setState(() {
+                            context
+                                .read<HomeCubit>()
+                                .updateUser(user.id!, result, isAdmin: isAdmin);
+                          });
+                        }
                       }
-                    }
-                  },
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    if (isAdmin)
-                      PopupMenuItem<String>(
-                        value: 'Verifikasi',
+                    },
+                    itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                      if (isAdmin)
+                        PopupMenuItem<String>(
+                          value: 'Verifikasi',
+                          child: ListTile(
+                            leading: const Icon(Icons.verified_outlined),
+                            title: Text('${isVerified ? 'Batalkan' : ''} Verifikasi'),
+                          ),
+                        ),
+                      const PopupMenuItem<String>(
+                        value: 'Edit',
                         child: ListTile(
-                          leading: const Icon(Icons.verified_outlined),
-                          title: Text('${isVerified ? 'Batalkan' : ''} Verifikasi'),
+                          leading: Icon(Icons.edit_outlined),
+                          title: Text('Edit'),
                         ),
                       ),
-                    const PopupMenuItem<String>(
-                      value: 'Edit',
-                      child: ListTile(
-                        leading: Icon(Icons.edit_outlined),
-                        title: Text('Edit'),
+                      const PopupMenuItem<String>(
+                        value: 'Delete',
+                        child: ListTile(
+                          leading: Icon(Icons.delete_outline),
+                          title: Text('Hapus'),
+                        ),
                       ),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'Delete',
-                      child: ListTile(
-                        leading: Icon(Icons.delete_outline),
-                        title: Text('Hapus'),
-                      ),
-                    ),
-                  ],
-                ),
-                onTap: () async {
-                  final Uint8List markerIcon = await createCustomMarkerBitmap(
-                    'NIK: ${user.nik}\nNama: ${user.name}\nDisabilitas: ${user.disability}\n',
-                    // "assets/images/clover_tree.png",
-                    user.photo ?? '',
-                    user.isVerified ?? false,
-                  );
-                  var marker = Marker(
-                    markerId: MarkerId('${user.nik}'),
-                    position: LatLng(
-                        double.parse(user.latitude ?? '0'), double.parse(user.longitude ?? '0')),
-                    infoWindow: InfoWindow(title: '${user.address}'),
-                    draggable: false,
-                    // ignore: deprecated_member_use
-                    icon: BitmapDescriptor.fromBytes(markerIcon),
-                  );
-                  return await showModalBottomSheet(
-                    // ignore: use_build_context_synchronously
-                    context: context,
-                    backgroundColor: AppColors.main,
-                    isScrollControlled: true,
-                    builder: (context) {
-                      return FractionallySizedBox(
-                        heightFactor: 0.9,
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(10.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: MapScreen(
-                                  latitude: double.parse(user.latitude ?? '0.0'),
-                                  longitude: double.parse(user.longitude ?? '0.0'),
-                                  markers: marker,
+                    ],
+                  ),
+                  onTap: () async {
+                    final Uint8List markerIcon = await createCustomMarkerBitmap(
+                      'NIK: ${user.nik}\nNama: ${user.name}\nDisabilitas: ${user.disability}\n',
+                      // "assets/images/clover_tree.png",
+                      user.photo ?? '',
+                      user.isVerified ?? false,
+                    );
+                    var marker = Marker(
+                      markerId: MarkerId('${user.nik}'),
+                      position: LatLng(
+                          double.parse(user.latitude ?? '0'), double.parse(user.longitude ?? '0')),
+                      infoWindow: InfoWindow(title: '${user.address}'),
+                      draggable: false,
+                      // ignore: deprecated_member_use
+                      icon: BitmapDescriptor.fromBytes(markerIcon),
+                    );
+                    return await showModalBottomSheet(
+                      // ignore: use_build_context_synchronously
+                      context: context,
+                      backgroundColor: AppColors.main,
+                      isScrollControlled: true,
+                      builder: (context) {
+                        return FractionallySizedBox(
+                          heightFactor: 0.9,
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(10.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: MapScreen(
+                                    latitude: double.parse(user.latitude ?? '0.0'),
+                                    longitude: double.parse(user.longitude ?? '0.0'),
+                                    markers: marker,
+                                  ),
                                 ),
                               ),
-                            ),
-                            Expanded(
-                              child: Material(
-                                child: ListView(
-                                  children: [
-                                    ListTile(
-                                      title: const Text('NIK'),
-                                      subtitle: Text('${user.nik}'),
-                                    ),
-                                    ListTile(
-                                      title: const Text('Name'),
-                                      subtitle: Text('${user.name}'),
-                                      tileColor: AppColors.lightGray,
-                                    ),
-                                    ListTile(
-                                      title: const Text('Alamat'),
-                                      subtitle: Text('${user.address}'),
-                                    ),
-                                    ListTile(
-                                      title: const Text('Tanggal Lahir'),
-                                      subtitle: Text(
-                                        DateFormat.yMMMMEEEEd('id_ID').format(
-                                          DateFormat('yyyy-MM-dd').parse(user.birthDate!),
+                              Expanded(
+                                child: Material(
+                                  child: ListView(
+                                    children: [
+                                      ListTile(
+                                        title: const Text('NIK'),
+                                        subtitle: Text('${user.nik}'),
+                                      ),
+                                      ListTile(
+                                        title: const Text('Name'),
+                                        subtitle: Text('${user.name}'),
+                                        tileColor: AppColors.lightGray,
+                                      ),
+                                      ListTile(
+                                        title: const Text('Alamat'),
+                                        subtitle: Text('${user.address}'),
+                                      ),
+                                      ListTile(
+                                        title: const Text('Tanggal Lahir'),
+                                        subtitle: Text(
+                                          DateFormat.yMMMMEEEEd('id_ID').format(
+                                            DateFormat('yyyy-MM-dd').parse(user.birthDate!),
+                                          ),
+                                        ),
+                                        tileColor: AppColors.lightGray,
+                                      ),
+                                      ListTile(
+                                        title: const Text('Disabilitas'),
+                                        subtitle: Text(
+                                          disabilityType(user.disability!),
                                         ),
                                       ),
-                                      tileColor: AppColors.lightGray,
-                                    ),
-                                    ListTile(
-                                      title: const Text('Disabilitas'),
-                                      subtitle: Text(
-                                        disabilityType(user.disability!),
+                                      ListTile(
+                                        title: const Text('Jenis Kelamin'),
+                                        subtitle:
+                                            Text(user.gender == 'male' ? 'Laki-Laki' : 'Perempuan'),
+                                        tileColor: AppColors.lightGray,
                                       ),
-                                    ),
-                                    ListTile(
-                                      title: const Text('Jenis Kelamin'),
-                                      subtitle:
-                                          Text(user.gender == 'male' ? 'Laki-Laki' : 'Perempuan'),
-                                      tileColor: AppColors.lightGray,
-                                    ),
-                                    ListTile(
-                                      title: const Text('Status Verifikasi'),
-                                      subtitle: Text(user.isVerified ?? false
-                                          ? 'Sudah Diverifikasi'
-                                          : 'Belum Diverifikasi'),
-                                    ),
-                                  ],
+                                      ListTile(
+                                        title: const Text('Status Verifikasi'),
+                                        subtitle: Text(user.isVerified ?? false
+                                            ? 'Sudah Diverifikasi'
+                                            : 'Belum Diverifikasi'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            );
-          });
-        },
-      ),
-    );
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              );
+            });
+          },
+        ),
+      );
+    }
+    return const SizedBox();
   }
 }

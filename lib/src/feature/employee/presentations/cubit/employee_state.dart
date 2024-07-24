@@ -9,12 +9,12 @@ sealed class EmployeeState extends Equatable {
 
 final class EmployeeInitial extends EmployeeState {}
 
+class HomeEmployeesLoading extends EmployeeState {}
+
 class HomeEmployeesSuccess extends EmployeeState {
   final List<EmployeeModel> users;
-  final bool isLoading;
-  final bool? isFailed;
 
-  const HomeEmployeesSuccess(this.users, {this.isLoading = false, this.isFailed});
+  const HomeEmployeesSuccess(this.users);
 
   @override
   List<Object> get props => users;
@@ -39,3 +39,5 @@ class HomeEmployeeSuccess extends EmployeeState {
   @override
   List<Object> get props => [user];
 }
+
+class HomeEmployeeDeleted extends EmployeeState {}

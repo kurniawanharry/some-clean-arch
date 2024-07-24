@@ -15,7 +15,7 @@ import 'package:some_app/src/feature/authentication/domain/usecases/edit_usecase
 import 'package:some_app/src/feature/authentication/domain/usecases/refresh_token_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_in_usecases.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/logout_usecase.dart';
-import 'package:some_app/src/feature/authentication/domain/usecases/sign_karyawan_usercase.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/sign_employee_usercase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_up_usecase.dart';
 
 part 'auth_state.dart';

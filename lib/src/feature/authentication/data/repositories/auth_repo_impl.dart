@@ -125,4 +125,16 @@ class AuthRepositoryImpl extends AbstractAuthRepository {
       return Left(CancelTokenFailure(e.message, e.statusCode));
     }
   }
+
+  @override
+  Future<Either<Failure, EmployeeModel>> deleteEmployee(int id) async {
+    try {
+      final result = await articlesApi.deleteEmployee(id);
+      return Right(result);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message, e.statusCode));
+    } on CancelTokenException catch (e) {
+      return Left(CancelTokenFailure(e.message, e.statusCode));
+    }
+  }
 }

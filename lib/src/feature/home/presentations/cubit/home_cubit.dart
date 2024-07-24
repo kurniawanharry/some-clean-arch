@@ -34,16 +34,16 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future fetchUsers(bool isAdmin) async {
     try {
-      emit(const HomeUsersSuccess([], isLoading: true));
+      emit(HomeLoading());
       final result = await usersUseCase.call(isAdmin);
       result.fold((l) {
-        emit(const HomeUsersSuccess([], isFailed: true, isLoading: false));
+        emit(HomeFailure(l.errorMessage));
       }, (r) async {
         allUsers = r;
-        emit(HomeUsersSuccess(r, isFailed: false));
+        emit(HomeUsersSuccess(r));
       });
     } catch (error) {
-      emit(const HomeUsersSuccess([], isFailed: true, isLoading: false));
+      emit(HomeFailure(error.toString()));
     }
   }
 
@@ -61,7 +61,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   toggleVerification(int id, bool value) async {
     try {
-      emit(const HomeUsersSuccess([], isLoading: true));
+      emit(HomeLoading());
 
       var index = allUsers.indexWhere((element) => element.id == id);
       if (index != -1) {
@@ -91,7 +91,7 @@ class HomeCubit extends Cubit<HomeState> {
 
   deleteUser(int id, UserModel? model) async {
     try {
-      emit(const HomeUsersSuccess([], isLoading: true));
+      emit(HomeLoading());
       var index = allUsers.indexWhere((element) => element.id == id);
 
       final result = await deleteUseCase.call(id);
@@ -102,6 +102,7 @@ class HomeCubit extends Cubit<HomeState> {
         if (index != -1) {
           allUsers.removeAt(index);
         }
+        emit(HomeDeleted());
         emit(HomeUsersSuccess(allUsers));
       });
     } catch (e) {

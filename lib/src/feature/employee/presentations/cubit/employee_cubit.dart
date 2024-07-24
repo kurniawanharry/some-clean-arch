@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:some_app/src/core/util/usescases/usecases.dart';
 import 'package:some_app/src/feature/authentication/data/models/employee_model.dart';
+import 'package:some_app/src/feature/authentication/domain/usecases/delete_employee_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/employee_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/user_usecase.dart';
 
@@ -10,9 +11,11 @@ part 'employee_state.dart';
 class EmployeeCubit extends Cubit<EmployeeState> {
   final UserUseCase userUseCase;
   final EmployeeUseCase employeeUseCase;
+  final DeleteEmployeeUseCase deleteUseCase;
   EmployeeCubit(
     this.userUseCase,
     this.employeeUseCase,
+    this.deleteUseCase,
   ) : super(EmployeeInitial());
 
   List<EmployeeModel> allUsers = [];
@@ -20,13 +23,13 @@ class EmployeeCubit extends Cubit<EmployeeState> {
 
   Future fetchEmpolyee() async {
     try {
-      emit(const HomeEmployeesSuccess([], isLoading: true));
+      emit(HomeEmployeesLoading());
       final result = await employeeUseCase.call(NoParams());
       result.fold((l) {
-        emit(const HomeEmployeesSuccess([]));
+        emit(HomeEmployeesFailed(l.errorMessage));
       }, (r) async {
         allUsers = r;
-        emit(HomeEmployeesSuccess(r, isFailed: false));
+        emit(HomeEmployeesSuccess(r));
       });
     } catch (error) {
       emit(HomeEmployeesFailed(error.toString()));
@@ -35,13 +38,13 @@ class EmployeeCubit extends Cubit<EmployeeState> {
 
   searchUsers(String query) {
     if (query.isEmpty) {
-      emit(HomeEmployeesSuccess(allUsers, isFailed: false));
+      emit(HomeEmployeesSuccess(allUsers));
     } else {
       List<EmployeeModel> filteredUsers = allUsers.where((user) {
         return user.name!.toLowerCase().contains(query.toLowerCase()) ||
             user.username!.toLowerCase().contains(query.toLowerCase());
       }).toList();
-      emit(HomeEmployeesSuccess(filteredUsers, isFailed: false));
+      emit(HomeEmployeesSuccess(filteredUsers));
     }
   }
 
@@ -54,6 +57,27 @@ class EmployeeCubit extends Cubit<EmployeeState> {
       });
     } catch (error) {
       emit(HomeEmployeesFailed(error.toString()));
+    }
+  }
+
+  deleteUser(int id, EmployeeModel? model) async {
+    try {
+      emit(EmployeeLoading());
+      var index = allUsers.indexWhere((element) => element.id == id);
+
+      final result = await deleteUseCase.call(id);
+
+      result.fold((l) {
+        emit(HomeEmployeesFailed(l.errorMessage));
+      }, (r) async {
+        if (index != -1) {
+          allUsers.removeAt(index);
+        }
+        emit(HomeEmployeeDeleted());
+        emit(HomeEmployeesSuccess(allUsers));
+      });
+    } catch (e) {
+      emit(HomeEmployeesFailed(e.toString()));
     }
   }
 

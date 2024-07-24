@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -191,9 +192,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           alignment: Alignment.center,
                           child: GestureDetector(
                             onTap: () async {
-                              var image = await _pickImage();
-                              if (image != null) {
-                                setState(() => imageUrl = image);
+                              var file = await _pickImage();
+                              if (file != null) {
+                                var image = await _compressImage(file);
+                                setState(() => imageUrl = image?.path ?? '');
                               }
                             },
                             child: CircleAvatar(
@@ -611,9 +613,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                   ),
                                   onPressed: () async {
                                     FocusManager.instance.primaryFocus?.unfocus();
-                                    var image = await _pickImage();
-                                    if (image != null) {
-                                      setState(() => imageid = image);
+                                    var file = await _pickImage();
+                                    if (file != null) {
+                                      var image = await _compressImage(file);
+                                      setState(() => imageid = image?.path ?? '');
                                     }
                                   },
                                   icon: const Icon(Icons.image_outlined, size: 18),
@@ -655,7 +658,11 @@ class _RegisterPageState extends State<RegisterPage> {
                       BlocConsumer<AuthCubit, AuthState>(
                         listener: (context, state) {
                           if (state is AuthRegistered) {
-                            context.goNamed('home');
+                            context.pop(true);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('User Berhasil Dibuat')),
+                            );
                           }
 
                           if (state is AuthFailure) {
@@ -684,6 +691,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                 createdAt: state.model.createdAt,
                                 updatedAt: state.model.updatedAt,
                               ),
+                            );
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('User Berhasil di Edit')),
                             );
                           }
                         },
@@ -821,13 +832,22 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Future<String?>? _pickImage() async {
+  Future<File?>? _pickImage() async {
     final pickedFile = await _imagePicker.pickImage(source: ImageSource.gallery);
     if (pickedFile == null) {
       return null;
     } else {
-      return pickedFile.path;
+      return File(pickedFile.path);
     }
+  }
+
+  Future<File?> _compressImage(File file) async {
+    final compressedImage = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      '${file.absolute.parent.path}/compressed_${file.uri.pathSegments.last}',
+      quality: 70,
+    );
+    return File(compressedImage!.path);
   }
 
   toggleGender(int value) => setState(() => gender = value);

@@ -1,5 +1,5 @@
 class Env {
-  static const String apiUrl = "https://giuki.online.com";
+  static const String apiUrl = "https://giuki.online";
 
   static String get urlApiAuth => "$apiUrl/api/auth";
   static String get urlApiAdmin => "$apiUrl/api/admin";

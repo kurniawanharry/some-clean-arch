@@ -16,6 +16,8 @@ abstract class AbstractAuthApi {
 
   Future<EmployeeModel> editEmployee(int id, EmployeeModel params);
 
+  Future<EmployeeModel> deleteEmployee(int id);
+
   Future<UserResponseModel> edit(EditModel params);
 
   Future<UserResponseModel> editById(int id, EditModel params);

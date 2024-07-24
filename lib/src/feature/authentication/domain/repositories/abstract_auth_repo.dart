@@ -13,6 +13,7 @@ abstract class AbstractAuthRepository {
   Future<Either<Failure, UserResponseModel>> signUp(bool isAdmin, SignUpModel params);
   Future<Either<Failure, EmployeeModel>> signEmployee(EmployeeModel params);
   Future<Either<Failure, EmployeeModel>> editEmployee(int id, EmployeeModel params);
+  Future<Either<Failure, EmployeeModel>> deleteEmployee(int id);
   Future<Either<Failure, TokenModel>> refreshToken();
   Future<Either<Failure, UserResponseModel>> edit(EditModel params);
   Future<Either<Failure, UserResponseModel>> editById(int id, EditModel params);

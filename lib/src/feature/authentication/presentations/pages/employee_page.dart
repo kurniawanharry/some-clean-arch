@@ -244,7 +244,11 @@ class _EmployeePageState extends State<EmployeePage> {
                       BlocConsumer<AuthCubit, AuthState>(
                         listener: (context, state) {
                           if (state is AuthEmployeCreated) {
-                            context.goNamed('home');
+                            context.pop(true);
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Karyawan Berhasil Dibuat')),
+                            );
                           }
                           if (state is AuthEmployeEdited) {
                             context.pop(
@@ -255,6 +259,10 @@ class _EmployeePageState extends State<EmployeePage> {
                                 createdAt: state.model.createdAt,
                                 updatedAt: state.model.updatedAt,
                               ),
+                            );
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Karyawan Berhasil di Edit')),
                             );
                           }
                         },

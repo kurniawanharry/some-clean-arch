@@ -193,4 +193,24 @@ class AuthImplApi extends AbstractAuthApi {
       throw ServerException(e.toString(), null);
     }
   }
+
+  @override
+  Future<EmployeeModel> deleteEmployee(int id) async {
+    try {
+      final result = await dio.post(
+        '${Env.urlApiAdmin}/employees/delete/$id',
+      );
+      if (result.data == null) {
+        throw ServerException("Unknown Error", result.statusCode);
+      }
+
+      return EmployeeModel.fromJson(result.data);
+    } on DioException catch (e) {
+      throw ServerException(handleDioError(e), e.response?.statusCode);
+    } on ServerException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(e.toString(), null);
+    }
+  }
 }
