@@ -11,9 +11,6 @@ extension AppRouteExtension on AppRouteEnum {
 
       case AppRouteEnum.photoViewPage:
         return "/photo_view_page";
-
-      default:
-        return "/auth_page";
     }
   }
 }

@@ -3,22 +3,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:some_app/src/core/network/dio_network.dart';
 import 'package:some_app/src/core/util/log/app_logger.dart';
 import 'package:some_app/src/feature/authentication/auth_injections.dart';
-import 'package:some_app/src/feature/employee/employee_injections.dart';
 import 'package:some_app/src/feature/home/home_injections.dart';
 import 'package:some_app/src/shared/app_injections.dart';
 
 final getIt = GetIt.instance;
 
-initInjections() async {
+Future<void> initInjections() async {
   await initSharedPrefsInjections();
   await initAppInjections();
   await initDioInjections();
   await initAuthInjections();
   await initHomeInjections();
-  await initEmployeeInjections();
 }
 
-initSharedPrefsInjections() async {
+Future<void> initSharedPrefsInjections() async {
   getIt.registerSingletonAsync<SharedPreferences>(() async {
     return await SharedPreferences.getInstance();
   });

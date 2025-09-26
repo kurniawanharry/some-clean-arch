@@ -7,8 +7,13 @@ class AboutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
+        Container(
+          decoration: const BoxDecoration(
+            color: AppColors.secondary,
+          ),
+        ),
         SafeArea(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,

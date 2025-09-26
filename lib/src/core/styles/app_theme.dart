@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:some_app/src/core/styles/app_colors.dart';
@@ -9,7 +10,6 @@ import 'package:some_app/src/core/styles/app_text_style.dart';
 class AppTheme {
   /// Light theme
   static final ThemeData appTheme = ThemeData(
-    dialogBackgroundColor: AppColors.lightGray,
     cardColor: AppColors.primaryColor,
     appBarTheme: AppBarTheme(
       // shadowColor: AppColors.lightGray,
@@ -34,6 +34,7 @@ class AppTheme {
       bodyLarge: AppTextStyle.largeBlack,
       bodyMedium: AppTextStyle.mediumBlack,
     ),
+    dialogTheme: DialogThemeData(backgroundColor: AppColors.lightGray),
 
     // colorScheme: ColorScheme.fromSwatch().copyWith(secondary: AppColors.primaryColor),
     // inputDecorationTheme: InputDecorationTheme(
@@ -56,8 +57,6 @@ class AppTheme {
 
   /// Dark theme
   static final ThemeData darkAppTheme = ThemeData(
-    dialogBackgroundColor: AppColors.primaryColor,
-
     cardColor: AppColors.orange.withOpacity(0.5),
     appBarTheme: AppBarTheme(
       shadowColor: AppColors.white,
@@ -82,6 +81,7 @@ class AppTheme {
       bodyLarge: AppTextStyle.largeWhite,
       bodyMedium: AppTextStyle.mediumWhite,
     ),
+    dialogTheme: DialogThemeData(backgroundColor: AppColors.primaryColor),
     // elevatedButtonTheme: ElevatedButtonThemeData(
     //   style: ElevatedButton.styleFrom(
     //     backgroundColor: AppColors.primaryColor,
@@ -120,8 +120,11 @@ class Themes {
   static ThemeData defaultThemes(BuildContext context, {bool isDark = false}) {
     return ThemeData(
       useMaterial3: true,
-      dialogBackgroundColor: isDark ? AppColors.primaryColor : AppColors.main,
-      platform: Platform.isAndroid ? TargetPlatform.android : TargetPlatform.iOS,
+      platform: kIsWeb
+          ? defaultTargetPlatform
+          : Platform.isAndroid
+              ? TargetPlatform.android
+              : TargetPlatform.iOS,
       visualDensity: VisualDensity.adaptivePlatformDensity,
       scaffoldBackgroundColor: isDark ? AppColors.primaryColor : AppColors.main,
       iconTheme: IconThemeData(color: isDark ? AppColors.white : AppColors.black, size: 25),
@@ -188,6 +191,8 @@ class Themes {
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
       ),
+      dialogTheme:
+          DialogThemeData(backgroundColor: isDark ? AppColors.primaryColor : AppColors.main),
     );
   }
 }

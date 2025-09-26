@@ -8,7 +8,6 @@ import 'package:some_app/src/core/router/router.dart';
 import 'package:some_app/src/core/styles/app_theme.dart';
 import 'package:some_app/src/core/util/injections.dart';
 import 'package:some_app/src/feature/authentication/data/data_sources/local/auth_shared_pref.dart';
-import 'package:some_app/src/feature/authentication/domain/usecases/delete_employee_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/delete_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_by_id_usecase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/edit_employee_usecase.dart';
@@ -19,24 +18,11 @@ import 'package:some_app/src/feature/authentication/domain/usecases/logout_useca
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_employee_usercase.dart';
 import 'package:some_app/src/feature/authentication/domain/usecases/sign_up_usecase.dart';
 import 'package:some_app/src/feature/authentication/presentations/cubit/auth_cubit.dart';
-import 'package:some_app/src/feature/employee/presentations/cubit/employee_cubit.dart';
-import 'package:some_app/src/feature/home/domain/usecase/employee_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/user_id_usecase.dart';
-import 'package:some_app/src/feature/home/domain/usecase/user_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/users_usecase.dart';
 import 'package:some_app/src/feature/home/domain/usecase/verify_usecase.dart';
 import 'package:some_app/src/feature/home/presentations/cubit/home_cubit.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
-///NIK
-///NAMA
-///MSISDN
-///PASSWORD
-///GENDER
-///T&L
-///TIPE DISABILITAS
-///ADDRESS
-///COORDINATE
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -110,13 +96,6 @@ class _AppState extends State<App> with WidgetsBindingObserver {
                     getIt<AuthSharedPrefs>(),
                   ),
                 ),
-                BlocProvider<EmployeeCubit>(
-                  create: (context) => EmployeeCubit(
-                    getIt<UserUseCase>(),
-                    getIt<EmployeeUseCase>(),
-                    getIt<DeleteEmployeeUseCase>(),
-                  ),
-                ),
               ],
               child: MaterialApp.router(
                 title: 'Some App',
@@ -152,7 +131,7 @@ class AppNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  updateThemeTitle(ThemeMode newDarkTheme) {
+  void updateThemeTitle(ThemeMode newDarkTheme) {
     darkTheme = newDarkTheme;
     if (Helper.isDarkTheme() == ThemeMode.dark) {
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);

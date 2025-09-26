@@ -39,84 +39,80 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        FocusScopeNode currentFocus = FocusScope.of(context);
-        if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
-          currentFocus.focusedChild!.unfocus();
-        }
-      },
-      child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              Expanded(
+        onTap: () {
+          FocusScopeNode currentFocus = FocusScope.of(context);
+          if (!currentFocus.hasPrimaryFocus && currentFocus.focusedChild != null) {
+            currentFocus.focusedChild!.unfocus();
+          }
+        },
+        child: Scaffold(
+          body: SafeArea(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400), // Constrain width for web
                 child: SingleChildScrollView(
-                  padding: AppDimens.paddingStandar,
+                  padding: const EdgeInsets.all(24.0), // Use fixed padding for web
                   child: Form(
                     key: _formKey,
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        // Header section
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Hero(
+                                  tag: 'auth-icon',
+                                  child: Icon(
+                                    MdiIcons.cloverOutline,
+                                    size: 40,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 15),
                             Hero(
-                              tag: 'auth-icon',
-                              child: Icon(
-                                MdiIcons.cloverOutline,
-                                size: 40,
+                              tag: 'auth-hero',
+                              child: Text(
+                                'Welcome\nHome.',
+                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 25,
+                                    ),
                               ),
                             ),
-                            // SegmentedButton<UserType>(
-                            //   segments: [
-                            //     ButtonSegment<UserType>(
-                            //       value: UserType.user,
-                            //       icon: Icon(MdiIcons.accountOutline),
-                            //     ),
-                            //     ButtonSegment<UserType>(
-                            //       value: UserType.admin,
-                            //       icon: Icon(MdiIcons.accountLockOutline),
-                            //     ),
-                            //   ],
-                            //   selected: <UserType>{userType},
-                            //   onSelectionChanged: (p0) => setState(() {
-                            //     nikController.clear();
-                            //     userType = p0.first;
-                            //   }),
-                            // )
+                            const SizedBox(height: 25),
                           ],
                         ),
-                        const SizedBox(height: 15),
-                        Hero(
-                          tag: 'auth-hero',
-                          child: Text(
-                            'Welcome\nHome.',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 25,
-                                ),
-                          ),
-                        ),
-                        const SizedBox(height: 25),
+
+                        // Form fields
                         TextFormField(
                           controller: nikController,
                           keyboardType:
                               userType == UserType.user ? TextInputType.number : TextInputType.text,
                           decoration: InputDecoration(
                             isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 10.w, horizontal: 10.h),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
                             hintText: userType == UserType.user ? 'NIK' : 'Username',
                             prefixIcon: Icon(
                               userType == UserType.user
                                   ? MdiIcons.identifier
                                   : MdiIcons.accountOutline,
                             ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
                           ),
                           inputFormatters: [
                             if (userType == UserType.user) FilteringTextInputFormatter.digitsOnly
                           ],
                           validator: (value) {
-                            if (value?.isEmpty ?? false) {
+                            if (value?.isEmpty ?? true) {
                               return 'Data Kosong';
                             } else if (userType == UserType.user && value!.length < 16) {
                               return 'NIK Harus 16 Angka';
@@ -124,119 +120,135 @@ class _LoginPageState extends State<LoginPage> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 16),
+
                         TextFormField(
                           controller: passwordController,
                           obscureText: !showPassword,
                           decoration: InputDecoration(
                             isDense: true,
-                            contentPadding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.h),
+                            contentPadding:
+                                const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
                             hintText: 'Password',
                             prefixIcon: Icon(
                               MdiIcons.lockOutline,
                             ),
-                            suffixIcon: GestureDetector(
-                              onTap: () => togglePassword(),
-                              child: Icon(
-                                showPassword ? MdiIcons.eyeOutline : MdiIcons.eyeOffOutline,
+                            suffixIcon: MouseRegion(
+                              cursor: SystemMouseCursors.click, // Web cursor
+                              child: GestureDetector(
+                                onTap: () => togglePassword(),
+                                child: Icon(
+                                  showPassword ? MdiIcons.eyeOutline : MdiIcons.eyeOffOutline,
+                                ),
                               ),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8.0),
                             ),
                           ),
                           validator: (value) {
-                            if (value?.isEmpty ?? false) {
+                            if (value?.isEmpty ?? true) {
                               return 'Data Kosong';
                             }
                             return null;
                           },
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Login button
+                        BlocConsumer<AuthCubit, AuthState>(
+                          listener: (context, state) {
+                            if (state is AuthSuccess) {
+                              // getIt<AuthSharedPrefs>()
+                              //     .saveType(state.user.userType ?? 100)
+                              //     .then((value) => context.goNamed('home'));
+                            } else if (state is AuthFailure) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(state.message),
+                                  behavior: SnackBarBehavior.floating, // Better for web
+                                ),
+                              );
+                            }
+                          },
+                          builder: (context, state) {
+                            return SizedBox(
+                              height: 48, // Fixed height for consistency
+                              child: ElevatedButton(
+                                onPressed: state is AuthLoading
+                                    ? null
+                                    : () {
+                                        FocusManager.instance.primaryFocus?.unfocus();
+                                        if (!_formKey.currentState!.validate()) {
+                                          return;
+                                        }
+                                        context.goNamed('home');
+                                        // final nik = nikController.text;
+                                        // final password = passwordController.text;
+                                        // context.read<AuthCubit>().signIn(
+                                        //       SignInModel(
+                                        //         nik: userType == UserType.user ? nik : null,
+                                        //         username: userType == UserType.user ? null : nik,
+                                        //         password: password,
+                                        //       ),
+                                        //     );
+                                      },
+                                style: ElevatedButton.styleFrom(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                ),
+                                child: state is AuthLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.0,
+                                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                        ),
+                                      )
+                                    : const Text('Login'),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Register link
+                        Center(
+                          child: MouseRegion(
+                            cursor: SystemMouseCursors.click, // Web cursor
+                            child: TextButton(
+                              onPressed: () => context.pushNamed('register'),
+                              child: Text.rich(
+                                TextSpan(
+                                  text: 'Belum mendaftar? ',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: AppColors.secondary,
+                                      ),
+                                  children: [
+                                    TextSpan(
+                                      text: 'Daftar Sekarang',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                            color: AppColors.third,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
                 ),
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: AppDimens.paddingStandar,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      BlocConsumer<AuthCubit, AuthState>(
-                        listener: (context, state) {
-                          if (state is AuthSuccess) {
-                            getIt<AuthSharedPrefs>()
-                                .saveType(state.user.userType ?? 100)
-                                .then((value) => context.goNamed('home'));
-                          } else if (state is AuthFailure) {
-                            // Show error message
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(state.message)),
-                            );
-                          }
-                        },
-                        builder: (context, state) {
-                          return ElevatedButton(
-                            onPressed: () {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                              if (!_formKey.currentState!.validate()) {
-                                return;
-                              }
-                              final nik = nikController.text;
-                              final password = passwordController.text;
-                              context.read<AuthCubit>().signIn(
-                                    SignInModel(
-                                      nik: userType == UserType.user ? nik : null,
-                                      username: userType == UserType.user ? null : nik,
-                                      password: password,
-                                    ),
-                                  );
-                            },
-                            child: state is AuthLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: AppColors.main,
-                                    ),
-                                  )
-                                : const Text('Login'),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 15),
-                      // Align(
-                      //   alignment: Alignment.center,
-                      //   child: TextButton(
-                      //     onPressed: () => context.pushNamed('register'),
-                      //     child: Text.rich(
-                      //       TextSpan(
-                      //         text: 'Belum mendaftar? ',
-                      //         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      //               color: AppColors.secondary,
-                      //             ),
-                      //         children: [
-                      //           TextSpan(
-                      //             text: 'Daftar Sekarang',
-                      //             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      //                   color: AppColors.third,
-                      //                 ),
-                      //           )
-                      //         ],
-                      //       ),
-                      //     ),
-                      //   ),
-                      // ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+        ));
   }
 
-  togglePassword() => setState(() => showPassword = !showPassword);
+  void togglePassword() => setState(() => showPassword = !showPassword);
 }
